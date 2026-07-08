@@ -1,0 +1,75 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAdmin() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+        && get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.isActive == true;
+    }
+
+    function isSuperAdmin() {
+      return isAdmin()
+        && get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == "super_admin";
+    }
+
+    // Daily results: public read, admin write
+    match /daily_results/{date} {
+      allow read: if true;
+      allow create, update: if isAdmin();
+      allow delete: if isSuperAdmin();
+    }
+
+    // Chart history: public read, admin write
+    match /charts_history/{chartId} {
+      allow read: if true;
+      allow create, update: if isAdmin();
+      allow delete: if isSuperAdmin();
+    }
+
+    // Admin profiles
+    match /admins/{adminId} {
+      allow read: if request.auth != null && (request.auth.uid == adminId || isSuperAdmin());
+      allow write: if isSuperAdmin();
+    }
+
+    // Users (notification subscribers)
+    match /users/{userId} {
+      allow create: if true;
+      allow read: if isAdmin();
+      allow update: if true;
+      allow delete: if isAdmin();
+    }
+
+    // Notifications
+    match /notifications/{notifId} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // Banners: public read, admin write
+    match /banners/{bannerId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Advertisements: public read, admin write
+    match /advertisements/{adId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Site config: public read, super_admin write
+    match /site_config/{configId} {
+      allow read: if true;
+      allow write: if isSuperAdmin();
+    }
+
+    // Contact messages: anyone can create, admin can read/update
+    match /contact_messages/{msgId} {
+      allow create: if true;
+      allow read, update: if isAdmin();
+      allow delete: if isSuperAdmin();
+    }
+  }
+}

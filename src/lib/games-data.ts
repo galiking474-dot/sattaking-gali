@@ -1,0 +1,115 @@
+export interface GameInfo {
+  gameName: string;
+  gameCode: string;
+  resultTime: string;
+  displayOrder: number;
+  isActive: boolean;
+  highlighted?: boolean; // gold/yellow background like in screenshot
+}
+
+// All games sorted by result time (earliest last = REST first, latest = LIVE/NEXT)
+export const ALL_GAMES: GameInfo[] = [
+  // REST games (early morning / previous day results already declared)
+  { gameName: "BIKANER SUPER", gameCode: "bikaner-super", resultTime: "02:20 AM", displayOrder: 1, isActive: true },
+  { gameName: "DESAWAR", gameCode: "desawar", resultTime: "05:00 AM", displayOrder: 2, isActive: true, highlighted: true },
+  { gameName: "NEW PUNJAB", gameCode: "new-punjab", resultTime: "11:10 AM", displayOrder: 3, isActive: true },
+  { gameName: "RAHAT KING", gameCode: "rahat-king", resultTime: "11:15 AM", displayOrder: 4, isActive: true, highlighted: true },
+  { gameName: "GHAZIABAD", gameCode: "ghaziabad", resultTime: "09:25 PM", displayOrder: 5, isActive: true, highlighted: true },
+  { gameName: "MUMBAI STAR", gameCode: "mumbai-star", resultTime: "09:30 PM", displayOrder: 6, isActive: true },
+  { gameName: "NEW GHAZIABAD", gameCode: "new-ghaziabad", resultTime: "09:45 PM", displayOrder: 7, isActive: true },
+  { gameName: "BALA JI DADRI", gameCode: "bala-ji-dadri", resultTime: "10:15 PM", displayOrder: 8, isActive: true },
+  { gameName: "WAHEGURU JI", gameCode: "waheguru-ji", resultTime: "10:15 PM", displayOrder: 9, isActive: true, highlighted: true },
+  { gameName: "JAISALMER", gameCode: "jaisalmer", resultTime: "10:40 PM", displayOrder: 10, isActive: true },
+  { gameName: "CHOTI GALI", gameCode: "choti-gali", resultTime: "10:50 PM", displayOrder: 11, isActive: true },
+  { gameName: "SHAAN E PUNJAB", gameCode: "shaan-e-punjab", resultTime: "11:00 PM", displayOrder: 12, isActive: true, highlighted: true },
+  { gameName: "NEW GALI", gameCode: "new-gali", resultTime: "11:00 PM", displayOrder: 13, isActive: true },
+  { gameName: "DELHI EVENING", gameCode: "delhi-evening", resultTime: "11:10 PM", displayOrder: 14, isActive: true },
+  { gameName: "GALI", gameCode: "gali", resultTime: "11:25 PM", displayOrder: 15, isActive: true, highlighted: true },
+
+  // LIVE games (currently being declared)
+  { gameName: "MOHALI", gameCode: "mohali", resultTime: "03:00 PM", displayOrder: 16, isActive: true },
+  { gameName: "DELHI BAZAR", gameCode: "delhi-bazar", resultTime: "03:00 PM", displayOrder: 17, isActive: true, highlighted: true },
+  { gameName: "MEERUT CITY", gameCode: "meerut-city", resultTime: "03:00 PM", displayOrder: 18, isActive: true },
+  { gameName: "MANGAL BAZAR", gameCode: "mangal-bazar", resultTime: "03:00 PM", displayOrder: 19, isActive: true },
+  { gameName: "DELHI DREAM", gameCode: "delhi-dream", resultTime: "02:40 PM", displayOrder: 20, isActive: true },
+  { gameName: "KALKA BAZAR", gameCode: "kalka-bazar", resultTime: "02:30 PM", displayOrder: 21, isActive: true, highlighted: true },
+  { gameName: "SAVERA", gameCode: "savera", resultTime: "02:30 PM", displayOrder: 22, isActive: true },
+  { gameName: "SUPER DELHI", gameCode: "super-delhi", resultTime: "02:30 PM", displayOrder: 23, isActive: true },
+  { gameName: "DELHI CITY", gameCode: "delhi-city", resultTime: "02:30 PM", displayOrder: 24, isActive: true },
+  { gameName: "SUPER TAJ", gameCode: "super-taj", resultTime: "02:25 PM", displayOrder: 25, isActive: true },
+  { gameName: "JAIPUR KING", gameCode: "jaipur-king", resultTime: "02:15 PM", displayOrder: 26, isActive: true },
+  { gameName: "MATKA KING", gameCode: "matka-king", resultTime: "02:15 PM", displayOrder: 27, isActive: true },
+  { gameName: "BURJ KHALIFA - BK", gameCode: "burj-khalifa", resultTime: "02:10 PM", displayOrder: 28, isActive: true },
+  { gameName: "SHREE GANGA NAGAR", gameCode: "shree-ganga-nagar", resultTime: "02:10 PM", displayOrder: 29, isActive: true },
+  { gameName: "U.P KING", gameCode: "up-king", resultTime: "02:00 PM", displayOrder: 30, isActive: true, highlighted: true },
+  { gameName: "RAJDHANI JAIPUR", gameCode: "rajdhani-jaipur", resultTime: "02:00 PM", displayOrder: 31, isActive: true },
+  { gameName: "AGRA BAZAR", gameCode: "agra-bazar", resultTime: "02:00 PM", displayOrder: 32, isActive: true },
+  { gameName: "BIHAR KING", gameCode: "bihar-king", resultTime: "02:00 PM", displayOrder: 33, isActive: true },
+  { gameName: "JANTA CITY", gameCode: "janta-city", resultTime: "02:00 PM", displayOrder: 34, isActive: true },
+  { gameName: "UJALA", gameCode: "ujala", resultTime: "02:00 PM", displayOrder: 35, isActive: true },
+  { gameName: "MUMBAI BAZAAR", gameCode: "mumbai-bazaar", resultTime: "02:00 PM", displayOrder: 36, isActive: true },
+  { gameName: "MATKA SONE KA", gameCode: "matka-sone-ka", resultTime: "01:55 PM", displayOrder: 37, isActive: true },
+  { gameName: "GURU MANGAL", gameCode: "guru-mangal", resultTime: "01:50 PM", displayOrder: 38, isActive: true },
+  { gameName: "SUPER KING", gameCode: "super-king", resultTime: "01:45 PM", displayOrder: 39, isActive: true },
+  { gameName: "AL MALIK BAZAR", gameCode: "al-malik-bazar", resultTime: "01:45 PM", displayOrder: 40, isActive: true },
+  { gameName: "DEEP SAGAR", gameCode: "deep-sagar", resultTime: "01:40 PM", displayOrder: 41, isActive: true, highlighted: true },
+  { gameName: "ROYAL BAZAR", gameCode: "royal-bazar", resultTime: "01:15 PM", displayOrder: 42, isActive: true },
+
+  // NEXT games (upcoming)
+  { gameName: "CHENNAI", gameCode: "chennai", resultTime: "03:05 PM", displayOrder: 43, isActive: true },
+  { gameName: "ROYAL CHALLENGE", gameCode: "royal-challenge", resultTime: "03:10 PM", displayOrder: 44, isActive: true, highlighted: true },
+  { gameName: "TAJ", gameCode: "taj", resultTime: "03:15 PM", displayOrder: 45, isActive: true },
+  { gameName: "SUPER BAZAR", gameCode: "super-bazar", resultTime: "03:15 PM", displayOrder: 46, isActive: true },
+  { gameName: "ROYAL KING", gameCode: "royal-king", resultTime: "03:15 PM", displayOrder: 47, isActive: true },
+  { gameName: "MAA BHAGWATI", gameCode: "maa-bhagwati", resultTime: "03:30 PM", displayOrder: 48, isActive: true },
+  { gameName: "ANARKALI", gameCode: "anarkali", resultTime: "03:30 PM", displayOrder: 49, isActive: true },
+  { gameName: "DUBAI DELHI", gameCode: "dubai-delhi", resultTime: "03:45 PM", displayOrder: 50, isActive: true },
+  { gameName: "CHAND TARA", gameCode: "chand-tara", resultTime: "04:00 PM", displayOrder: 51, isActive: true },
+  { gameName: "UDAAN KING", gameCode: "udaan-king", resultTime: "04:00 PM", displayOrder: 52, isActive: true },
+  { gameName: "JALANDHAR", gameCode: "jalandhar", resultTime: "04:00 PM", displayOrder: 53, isActive: true },
+  { gameName: "SHIV SHAKTI", gameCode: "shiv-shakti", resultTime: "04:05 PM", displayOrder: 54, isActive: true },
+  { gameName: "SHRI GANESH", gameCode: "shri-ganesh", resultTime: "04:30 PM", displayOrder: 55, isActive: true, highlighted: true },
+  { gameName: "INDIA KING", gameCode: "india-king", resultTime: "04:30 PM", displayOrder: 56, isActive: true },
+  { gameName: "GHAZIABAD DIN", gameCode: "ghaziabad-din", resultTime: "04:35 PM", displayOrder: 57, isActive: true, highlighted: true },
+  { gameName: "SHRI NAGAR", gameCode: "shri-nagar", resultTime: "04:35 PM", displayOrder: 58, isActive: true },
+  { gameName: "AHMEDABAD", gameCode: "ahmedabad", resultTime: "05:00 PM", displayOrder: 59, isActive: true },
+  { gameName: "DS NUMBER 1", gameCode: "ds-number-1", resultTime: "05:00 PM", displayOrder: 60, isActive: true },
+  { gameName: "MAHALAXMI BAZAR", gameCode: "mahalaxmi-bazar", resultTime: "05:05 PM", displayOrder: 61, isActive: true },
+  { gameName: "HINDUSTAN", gameCode: "hindustan", resultTime: "05:10 PM", displayOrder: 62, isActive: true },
+  { gameName: "MAHARAJ", gameCode: "maharaj", resultTime: "05:15 PM", displayOrder: 63, isActive: true },
+  { gameName: "UTTARAKHAND - UK", gameCode: "uttarakhand", resultTime: "05:30 PM", displayOrder: 64, isActive: true },
+  { gameName: "FARIDABAD", gameCode: "faridabad", resultTime: "06:00 PM", displayOrder: 65, isActive: true, highlighted: true },
+  { gameName: "RAJDHANI", gameCode: "rajdhani", resultTime: "06:00 PM", displayOrder: 66, isActive: true },
+  { gameName: "OLD CITY", gameCode: "old-city", resultTime: "07:15 PM", displayOrder: 67, isActive: true },
+  { gameName: "NEELKANTH", gameCode: "neelkanth", resultTime: "07:20 PM", displayOrder: 68, isActive: true },
+  { gameName: "SUPER MAX", gameCode: "super-max", resultTime: "07:30 PM", displayOrder: 69, isActive: true, highlighted: true },
+  { gameName: "SHRI LAXMI", gameCode: "shri-laxmi", resultTime: "07:30 PM", displayOrder: 70, isActive: true },
+  { gameName: "DUBAI BAZAR", gameCode: "dubai-bazar", resultTime: "07:30 PM", displayOrder: 71, isActive: true },
+  { gameName: "GURGAON", gameCode: "gurgaon", resultTime: "07:35 PM", displayOrder: 72, isActive: true },
+  { gameName: "VEERA KING", gameCode: "veera-king", resultTime: "07:40 PM", displayOrder: 73, isActive: true, highlighted: true },
+  { gameName: "PARAS", gameCode: "paras", resultTime: "07:40 PM", displayOrder: 74, isActive: true },
+  { gameName: "FARIDA BAZAR", gameCode: "farida-bazar", resultTime: "07:40 PM", displayOrder: 75, isActive: true },
+  { gameName: "DELHI GOLDEN", gameCode: "delhi-golden", resultTime: "07:45 PM", displayOrder: 76, isActive: true },
+  { gameName: "DELHI STAR", gameCode: "delhi-star", resultTime: "07:45 PM", displayOrder: 77, isActive: true },
+  { gameName: "GALI BAZAR", gameCode: "gali-bazar", resultTime: "07:45 PM", displayOrder: 78, isActive: true },
+  { gameName: "DHAN KUBER", gameCode: "dhan-kuber", resultTime: "07:55 PM", displayOrder: 79, isActive: true, highlighted: true },
+  { gameName: "DEHRADUN", gameCode: "dehradun", resultTime: "08:00 PM", displayOrder: 80, isActive: true, highlighted: true },
+  { gameName: "TODAY BAZAAR", gameCode: "today-bazaar", resultTime: "08:00 PM", displayOrder: 81, isActive: true },
+  { gameName: "NEW SAHIBABAD", gameCode: "new-sahibabad", resultTime: "08:00 PM", displayOrder: 82, isActive: true },
+  { gameName: "SAWARIYA SETH", gameCode: "sawariya-seth", resultTime: "08:00 PM", displayOrder: 83, isActive: true },
+  { gameName: "SHRI JI", gameCode: "shri-ji", resultTime: "08:00 PM", displayOrder: 84, isActive: true },
+  { gameName: "SHIV SHANKAR", gameCode: "shiv-shankar", resultTime: "08:00 PM", displayOrder: 85, isActive: true },
+  { gameName: "BHARAT", gameCode: "bharat", resultTime: "08:00 PM", displayOrder: 86, isActive: true },
+  { gameName: "NAGPUR", gameCode: "nagpur", resultTime: "08:00 PM", displayOrder: 87, isActive: true },
+  { gameName: "BANGALORE", gameCode: "bangalore", resultTime: "08:00 PM", displayOrder: 88, isActive: true },
+  { gameName: "PUNJAB LAXMI", gameCode: "punjab-laxmi", resultTime: "08:00 PM", displayOrder: 89, isActive: true },
+  { gameName: "PALWAL", gameCode: "palwal", resultTime: "08:10 PM", displayOrder: 90, isActive: true, highlighted: true },
+  { gameName: "TAJ KING", gameCode: "taj-king", resultTime: "08:10 PM", displayOrder: 91, isActive: true },
+  { gameName: "GALI DISAWAR MIX", gameCode: "gali-disawar-mix", resultTime: "08:15 PM", displayOrder: 92, isActive: true, highlighted: true },
+  { gameName: "WHITE GOLD", gameCode: "white-gold", resultTime: "08:15 PM", displayOrder: 93, isActive: true },
+];
+
+// Generate a fake 2-digit result
+export function fakeResult(): string {
+  return String(Math.floor(Math.random() * 100)).padStart(2, "0");
+}

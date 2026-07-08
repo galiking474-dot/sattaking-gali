@@ -1,0 +1,25 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Banners: public read, admin write
+    match /banners/{fileName} {
+      allow read: if true;
+      allow write: if request.auth != null
+        && firestore.exists(/databases/(default)/documents/admins/$(request.auth.uid));
+    }
+
+    // Ads: public read, admin write
+    match /ads/{fileName} {
+      allow read: if true;
+      allow write: if request.auth != null
+        && firestore.exists(/databases/(default)/documents/admins/$(request.auth.uid));
+    }
+
+    // Default: block all other paths, max 5MB
+    match /{allPaths=**} {
+      allow read: if true;
+      allow write: if request.auth != null
+        && request.resource.size < 5 * 1024 * 1024;
+    }
+  }
+}
