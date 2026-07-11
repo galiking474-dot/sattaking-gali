@@ -382,12 +382,12 @@ function ResultBoard({ games }: { games: GameResult[] }) {
                             {game.name}
                           </div>
                           <div className="flex items-center gap-2 mt-0.5">
-                            <span className="text-[11px] md:hidden text-gray-500 font-extrabold">
+                            <span className="text-[10px] md:hidden text-gray-500 font-normal">
                               {game.time}
                             </span>
                             <Link
                               href={`/chart/${slug}`}
-                              className="text-[12px] md:text-sm font-bold text-[#7c3aed] hover:text-[#4c1d95]"
+                              className="text-[10px] md:text-sm font-medium text-[#7c3aed] hover:text-[#4c1d95]"
                             >
                               Record Chart &rarr;
                             </Link>
