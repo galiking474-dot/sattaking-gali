@@ -56,19 +56,19 @@ export function MonthlyChartSection({
   return (
     <div className="">
       <div className="flex items-center gap-2.5 md:gap-3 mb-3">
-        <div className="p-2 rounded-lg bg-[#7c3aed] text-white shrink-0">
+        <div className="p-2 rounded-lg bg-[#d97706] text-white shrink-0">
           <FiBarChart2 size={18} />
         </div>
         <div className="min-w-0">
-          <h2 className="text-xl md:text-lg font-extrabold text-[#2e1065]">Monthly Chart {displayYear}</h2>
-          <p className="text-[14px] md:text-xs text-gray-500 truncate">
+          <h2 className="text-xl md:text-lg font-extrabold text-[#a5370c]">Monthly Chart {displayYear}</h2>
+          <p className="text-[14px] md:text-xs text-[#8a6d2f] truncate">
             {displayMonth} {displayYear} &mdash; Gali, Desawar, Ghaziabad, Faridabad &amp; more
           </p>
         </div>
       </div>
 
-      <div className="bg-white rounded-xl border-2 border-[#4c1d95] overflow-hidden shadow-lg">
-        <div className="bg-gradient-to-r from-[#4c1d95] to-[#6d28d9] text-white text-center py-2.5 md:py-3 text-[14px] md:text-sm font-bold px-2 md:px-3 leading-relaxed border-b-2 border-[#f5b301]">
+      <div className="bg-white rounded-xl border-2 border-[#e0850b] overflow-hidden shadow-lg">
+        <div className="bg-gradient-to-r from-[#FFD93B] to-[#F5A623] text-[#a5370c] text-center py-2.5 md:py-3 text-[14px] md:text-sm font-bold px-2 md:px-3 leading-relaxed border-b-2 border-[#e0850b]">
           Satta King Chart {displayMonth} {displayYear} <span className="hidden sm:inline">&mdash; Faridabad, Ghaziabad, Gali, Shri Ganesh, Delhi Bazar &amp; Desawar</span>
         </div>
 
@@ -87,10 +87,10 @@ export function MonthlyChartSection({
           <div className="overflow-hidden">
             <table className="w-full table-fixed text-[18px] sm:text-xs md:text-base border-collapse">
               <thead>
-                <tr className="bg-[#2e1065] text-[#f5d67a] text-[14px] md:text-sm uppercase tracking-wider">
-                  <th className="py-2.5 px-0.5 md:px-3 text-[#f5b301] font-bold border border-[#5b21b6]">DATE</th>
+                <tr className="bg-[#a5370c] text-[#FFE071] text-[14px] md:text-sm uppercase tracking-wider">
+                  <th className="py-2.5 px-0.5 md:px-3 text-[#FFE071] font-bold border border-[#c2600f]">DATE</th>
                   {cols.map((c) => (
-                    <th key={c.key} className="py-2.5 px-0.5 md:px-3 font-bold border border-[#5b21b6]">{c.label}</th>
+                    <th key={c.key} className="py-2.5 px-0.5 md:px-3 font-bold border border-[#c2600f]">{c.label}</th>
                   ))}
                 </tr>
               </thead>
@@ -98,13 +98,13 @@ export function MonthlyChartSection({
                 {rows.map((row, i) => (
                   <tr
                     key={row.date}
-                    className={`text-center transition-colors hover:bg-[#efe7fb] ${
-                      i % 2 === 0 ? "bg-white" : "bg-[#f6f2fd]"
+                    className={`text-center transition-colors hover:bg-[#fdf2c9] ${
+                      i % 2 === 0 ? "bg-white" : "bg-[#fffbe9]"
                     }`}
                   >
-                    <td className="py-1.5 px-0.5 md:px-3 text-[#c2410c] font-extrabold border border-[#e6def7]">{row.date}</td>
+                    <td className="py-1.5 px-0.5 md:px-3 text-[#dc2626] font-extrabold border border-[#f0e2a6]">{row.date}</td>
                     {cols.map((c) => (
-                      <td key={c.key} className="py-1.5 px-0.5 md:px-3 font-mono font-bold text-[#2e1065] border border-[#e6def7]">{row[c.key]}</td>
+                      <td key={c.key} className="py-1.5 px-0.5 md:px-3 font-mono font-bold text-[#1e293b] border border-[#f0e2a6]">{row[c.key]}</td>
                     ))}
                   </tr>
                 ))}
@@ -118,14 +118,14 @@ export function MonthlyChartSection({
         <button
           onClick={() => fetchMonth(prevDate)}
           disabled={chartLoading}
-          className="bg-gradient-to-b from-[#f5b301] to-[#d4a017] text-[#2e1065] text-center py-2.5 md:py-3 rounded-xl text-xs md:text-sm font-extrabold border-2 border-[#7c3aed] hover:brightness-105 transition-all disabled:opacity-50"
+          className="bg-gradient-to-b from-[#FFD93B] to-[#d4a017] text-[#3a1d00] text-center py-2.5 md:py-3 rounded-xl text-xs md:text-sm font-extrabold border-2 border-[#e0850b] hover:brightness-105 transition-all disabled:opacity-50"
         >
           &larr; {format(prevDate, "MMM yyyy")}
         </button>
         <button
           onClick={() => fetchMonth(nextDate)}
           disabled={chartLoading}
-          className="bg-gradient-to-b from-[#f5b301] to-[#d4a017] text-[#2e1065] text-center py-2.5 md:py-3 rounded-xl text-xs md:text-sm font-extrabold border-2 border-[#7c3aed] hover:brightness-105 transition-all disabled:opacity-50"
+          className="bg-gradient-to-b from-[#FFD93B] to-[#d4a017] text-[#3a1d00] text-center py-2.5 md:py-3 rounded-xl text-xs md:text-sm font-extrabold border-2 border-[#e0850b] hover:brightness-105 transition-all disabled:opacity-50"
         >
           {format(nextDate, "MMM yyyy")} &rarr;
         </button>

@@ -1,5 +1,6 @@
 import { MetadataRoute } from "next";
 import { getResultSattaData } from "@/lib/api-helpers";
+import { FEATURED_GAMES } from "@/lib/featured-games";
 
 const BASE_URL = "https://sattaking-gali.com";
 
@@ -26,6 +27,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   return [
     ...staticRoutes,
+    // Featured market landing pages (result + yearly chart + Khaiwal + SEO).
+    ...FEATURED_GAMES.map((g) => ({
+      url: `${BASE_URL}/game/${g.slug}`,
+      lastModified: new Date(),
+      changeFrequency: "daily" as const,
+      priority: 0.9,
+    })),
     ...uniqueSlugs.map((slug) => ({
       url: `${BASE_URL}/chart/${slug}`,
       lastModified: new Date(),

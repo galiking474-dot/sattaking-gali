@@ -1,16 +1,16 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f5f2fb;
-  --foreground: #241247;
-  --primary: #2e1065;
-  --primary-light: #4c1d95;
-  --accent: #7c3aed;
+  --background: #fffdf3;
+  --foreground: #2a1c06;
+  --primary: #a5370c;
+  --primary-light: #d97706;
+  --accent: #ea580c;
   --accent-gold: #f5b301;
-  --success: #2d6a4f;
+  --success: #059669;
   --danger: #dc2626;
-  --card-bg: #ffffff;
-  --border: #e6def7;
+  --card-bg: #fef9e7;
+  --border: #f0e2a6;
 }
 
 @theme inline {
@@ -18,6 +18,10 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
@@ -39,8 +43,8 @@ body {
 
 /* Result card pulse */
 @keyframes pulse-border {
-  0%, 100% { border-color: #2d6a4f; }
-  50% { border-color: #d4a017; }
+  0%, 100% { border-color: #d97706; }
+  50% { border-color: #f5b301; }
 }
 
 .animate-pulse-border {
@@ -70,7 +74,7 @@ body {
 }
 
 .skeleton {
-  background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+  background: linear-gradient(90deg, #f3e8bf 25%, #fbf4d9 50%, #f3e8bf 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s ease-in-out infinite;
   border-radius: 6px;
@@ -78,8 +82,8 @@ body {
 
 /* Subtle dot pattern background */
 body {
-  background-color: #f5f2fb;
-  background-image: radial-gradient(circle at 1px 1px, #e0d5f5 0.5px, transparent 0);
+  background-color: #fffdf3;
+  background-image: radial-gradient(circle at 1px 1px, #f3e4a0 0.5px, transparent 0);
   background-size: 24px 24px;
 }
 
@@ -88,10 +92,10 @@ body {
   width: 5px;
 }
 ::-webkit-scrollbar-track {
-  background: #ede7f8;
+  background: #fdf3c4;
 }
 ::-webkit-scrollbar-thumb {
-  background: #7c3aed;
+  background: #f59e0b;
   border-radius: 3px;
 }
 
@@ -102,6 +106,15 @@ body {
 }
 .animate-live-pulse {
   animation: livePulse 1.2s ease-in-out infinite;
+}
+
+/* Watch "waiting" tick — used in place of the old WAIT text */
+@keyframes watchTick {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.55; transform: scale(0.88); }
+}
+.animate-watch-tick {
+  animation: watchTick 1.4s ease-in-out infinite;
 }
 
 /* Modal animations */
