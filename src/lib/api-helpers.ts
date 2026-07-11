@@ -1,13 +1,16 @@
 import { after } from "next/server";
-import { scrapeResultSatta, scrapeMonthlyChart } from "./scraper";
+import { scrapeResultSatta, scrapeMonthlyChart, scrapeHomepage, scrapeSK24Games } from "./scraper";
 import {
   getResultSattaFromFirestore,
   saveResultSattaToFirestore,
   getMonthlyChartFromFirestore,
   saveMonthlyChartToFirestore,
   getHomepageFromFirestore,
+  saveHomepageToFirestore,
+  getSK24GamesFromFirestore,
+  saveSK24GamesToFirestore,
 } from "./firebase-cache";
-import type { ResultSattaData, MonthlyChartData, HomepageData } from "./types";
+import type { ResultSattaData, MonthlyChartData, HomepageData, SK24GamesData } from "./types";
 
 // ─── Simple In-Memory Cache ───
 // Each serverless instance gets its own cache
@@ -102,6 +105,83 @@ export async function getSharedHomepageData(): Promise<HomepageData | null> {
     return firebaseData;
   }
   return null;
+}
+
+// ─── Get Homepage Data (on-demand, SCRAPES satta-king-fast & writes shared doc) ───
+// Flow: Memory cache → Firebase → Scrape. Unlike getSharedHomepageData (read-only),
+// this is the scraper role: if data is stale/missing it scrapes and updates the
+// shared `homepage` doc. Used by the live/next/rest-results backend API routes.
+
+export async function getHomepageData(): Promise<HomepageData | null> {
+  // 1. In-memory cache (instant)
+  const cached = memGet<HomepageData>("homepage");
+  if (cached) return cached;
+
+  // 2. Firebase
+  const firebaseData = await getHomepageFromFirestore();
+
+  if (firebaseData && !isStale(firebaseData.scrapedAt)) {
+    memSet("homepage", firebaseData, 300);
+    return firebaseData;
+  }
+
+  // 3. Stale but present — serve instantly, refresh in the background.
+  if (firebaseData) {
+    memSet("homepage", firebaseData, 15);
+    after(refreshHomepage);
+    return firebaseData;
+  }
+
+  // 4. Nothing cached at all (cold start) — must scrape inline this once.
+  return refreshHomepage();
+}
+
+async function refreshHomepage(): Promise<HomepageData | null> {
+  try {
+    const data = await scrapeHomepage();
+    const homepage: HomepageData = { ...data, scrapedAt: Date.now() };
+    memSet("homepage", homepage, 30);
+    await saveHomepageToFirestore(homepage);
+    return homepage;
+  } catch {
+    return memGet<HomepageData>("homepage");
+  }
+}
+
+// ─── Get Satta King 24 Data (on-demand) ───
+// Flow: Memory cache → Firebase → Scrape
+
+export async function getSK24Data(): Promise<SK24GamesData | null> {
+  const cached = memGet<SK24GamesData>("sk24-games");
+  if (cached) return cached;
+
+  const firebaseData = await getSK24GamesFromFirestore();
+  if (firebaseData && !isStale(firebaseData.scrapedAt)) {
+    memSet("sk24-games", firebaseData, 300);
+    return firebaseData;
+  }
+
+  // Stale but present — serve instantly, refresh in the background.
+  if (firebaseData) {
+    memSet("sk24-games", firebaseData, 15);
+    after(refreshSK24);
+    return firebaseData;
+  }
+
+  // Cold start — scrape inline this once.
+  return refreshSK24();
+}
+
+async function refreshSK24(): Promise<SK24GamesData | null> {
+  try {
+    const { games, spotlight } = await scrapeSK24Games();
+    const data: SK24GamesData = { games, spotlight, scrapedAt: Date.now() };
+    memSet("sk24-games", data, 30);
+    await saveSK24GamesToFirestore(data);
+    return data;
+  } catch {
+    return memGet<SK24GamesData>("sk24-games");
+  }
 }
 
 // ─── Get Monthly Chart Data (on-demand, read from shared Firebase) ───
