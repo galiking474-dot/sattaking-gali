@@ -6,9 +6,23 @@ import { FaWhatsapp, FaTelegramPlane } from "react-icons/fa";
 import { WhatsAppModal } from "@/components/layout/WhatsAppModal";
 import { MonthlyChartSection } from "@/components/home/MonthlyChartSection";
 import { ScrollAnimator } from "@/components/home/ScrollAnimator";
-import { FiZap, FiClock, FiTrendingUp, FiAward, FiCalendar } from "react-icons/fi";
-import { getResultSattaData, getMonthlyChart, getSharedHomepageData } from "@/lib/api-helpers";
-import { isTodayResultDeclared, parseClockTime, getISTMinutesOfDay } from "@/lib/utils";
+import {
+  FiZap,
+  FiClock,
+  FiTrendingUp,
+  FiAward,
+  FiCalendar,
+} from "react-icons/fi";
+import {
+  getResultSattaData,
+  getMonthlyChart,
+  getSharedHomepageData,
+} from "@/lib/api-helpers";
+import {
+  isTodayResultDeclared,
+  parseClockTime,
+  getISTMinutesOfDay,
+} from "@/lib/utils";
 import type { GameResult } from "@/lib/types";
 
 // Server-render the page and revalidate at most once every 30s. The results board
@@ -59,8 +73,11 @@ export default async function HomePage() {
       .filter((x) => x.min <= nowMin && x.g.today)
       .sort((a, b) => b.min - a.min)[0]?.g ?? null;
   const upNext =
-    timed.filter((x) => x.min > nowMin).sort((a, b) => a.min - b.min)[0]?.g ?? null;
-  const declaredCount = games.filter((g) => isTodayResultDeclared(g.time) && g.today).length;
+    timed.filter((x) => x.min > nowMin).sort((a, b) => a.min - b.min)[0]?.g ??
+    null;
+  const declaredCount = games.filter(
+    (g) => isTodayResultDeclared(g.time) && g.today
+  ).length;
 
   const updatedAt = format(now, "dd MMMM yyyy, hh:mm a") + " IST";
   const monthYear = format(now, "MMMM-yyyy");
@@ -70,9 +87,13 @@ export default async function HomePage() {
       <WhatsAppModal />
 
       {/* Hero */}
-      <div className="bg-gradient-to-b from-[#2e1065] to-[#4c1d95] text-white text-center py-5 md:py-8 px-3 md:px-4 border-b-4 border-[#f5b301]">
+      <div
+        id="top"
+        className="bg-gradient-to-b from-[#2e1065] to-[#4c1d95] text-white text-center py-5 md:py-8 px-3 md:px-4 border-b-4 border-[#f5b301]"
+      >
         <h1 className="text-2xl sm:text-xl md:text-4xl font-extrabold tracking-tight mb-1 md:mb-2">
-          Satta King Gali Result {year} &mdash; Live Gali, Desawar, Faridabad &amp; Ghaziabad
+          Satta King Gali Result {year} &mdash; Live Gali, Desawar, Faridabad
+          &amp; Ghaziabad
         </h1>
         <div className="mt-2.5 md:mt-4 inline-flex items-center gap-1.5 md:gap-2 bg-white/10 border border-[#f5b301]/40 rounded-full px-3 md:px-5 py-1.5 md:py-2 text-[14px] md:text-xs text-[#f5d67a]">
           <span className="w-1.5 h-1.5 md:w-2 md:h-2 bg-[#f5b301] rounded-full animate-live-pulse" />
@@ -84,15 +105,24 @@ export default async function HomePage() {
       <div className="bg-[#3b0f6e] border-b border-[#5b21b6] py-1.5 md:py-2 px-2 md:px-4">
         <p className="text-center text-[12px] sm:text-[10px] md:text-xs text-purple-200 max-w-4xl mx-auto leading-relaxed">
           <span className="font-bold text-[#f5b301]">DISCLAIMER:</span>{" "}
-          SattaKing-Gali.com is an independent informational website. We do not promote gambling or betting.{" "}
-          <Link href="/disclaimer" className="text-[#f5b301] hover:underline font-medium">
+          SattaKing-Gali.com is an independent informational website. We do not
+          promote gambling or betting.{" "}
+          <Link
+            href="/disclaimer"
+            className="text-[#f5b301] hover:underline font-medium"
+          >
             Read Full Disclaimer
           </Link>
         </p>
       </div>
 
       {/* Scoreboard spotlight — distinct hero band */}
-      <Scoreboard latest={latest} upNext={upNext} total={games.length} declared={declaredCount} />
+      <Scoreboard
+        latest={latest}
+        upNext={upNext}
+        total={games.length}
+        declared={declaredCount}
+      />
 
       <div className="max-w-[1400px] mx-auto px-2 sm:px-3 md:px-6 py-4 md:py-6 space-y-6 md:space-y-8">
         <AdSlot placement="homepage_top" />
@@ -189,15 +219,21 @@ function Scoreboard({
             {latest ? (
               <div className="mt-2 flex items-end justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-white font-extrabold text-lg md:text-2xl uppercase truncate">{latest.name}</p>
-                  <p className="text-purple-200 text-[11px] md:text-xs font-medium">{latest.time}</p>
+                  <p className="text-white font-extrabold text-lg md:text-2xl uppercase truncate">
+                    {latest.name}
+                  </p>
+                  <p className="text-purple-200 text-[11px] md:text-xs font-medium">
+                    {latest.time}
+                  </p>
                 </div>
                 <div className="shrink-0 bg-[#f5b301] text-[#2e1065] font-extrabold font-mono text-3xl md:text-5xl rounded-xl px-4 py-1.5 shadow-lg">
                   {latest.today}
                 </div>
               </div>
             ) : (
-              <p className="mt-3 text-purple-200 font-semibold">Waiting for today&apos;s first result…</p>
+              <p className="mt-3 text-purple-200 font-semibold">
+                Waiting for today&apos;s first result…
+              </p>
             )}
           </div>
 
@@ -209,15 +245,22 @@ function Scoreboard({
             {upNext ? (
               <div className="mt-2 flex items-center justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-white font-extrabold text-lg md:text-2xl uppercase truncate">{upNext.name}</p>
-                  <p className="text-purple-200 text-[11px] md:text-xs font-medium">Result expected at {upNext.time}</p>
+                  <p className="text-white font-extrabold text-lg md:text-2xl uppercase truncate">
+                    {upNext.name}
+                  </p>
+                  <p className="text-purple-200 text-[11px] md:text-xs font-medium">
+                    Result expected at {upNext.time}
+                  </p>
                 </div>
                 <div className="shrink-0 inline-flex items-center gap-1.5 bg-[#dc2626] text-white text-[11px] md:text-xs font-bold px-3 py-1.5 rounded-full">
-                  <span className="w-1.5 h-1.5 bg-white rounded-full animate-live-pulse" /> WAIT
+                  <span className="w-1.5 h-1.5 bg-white rounded-full animate-live-pulse" />{" "}
+                  WAIT
                 </div>
               </div>
             ) : (
-              <p className="mt-3 text-purple-200 font-semibold">All of today&apos;s games are declared.</p>
+              <p className="mt-3 text-purple-200 font-semibold">
+                All of today&apos;s games are declared.
+              </p>
             )}
           </div>
         </div>
@@ -225,22 +268,45 @@ function Scoreboard({
         {/* Stats strip */}
         <div className="mt-3 md:mt-4 grid grid-cols-3 gap-2 md:gap-3">
           <StatPill icon={<FiCalendar />} label="Games" value={String(total)} />
-          <StatPill icon={<FiTrendingUp />} label="Declared" value={String(declared)} />
-          <StatPill icon={<FiZap />} label="Pending" value={String(Math.max(0, total - declared))} live />
+          <StatPill
+            icon={<FiTrendingUp />}
+            label="Declared"
+            value={String(declared)}
+          />
+          <StatPill
+            icon={<FiZap />}
+            label="Pending"
+            value={String(Math.max(0, total - declared))}
+            live
+          />
         </div>
       </div>
     </div>
   );
 }
 
-function StatPill({ icon, label, value, live }: { icon: React.ReactNode; label: string; value: string; live?: boolean }) {
+function StatPill({
+  icon,
+  label,
+  value,
+  live,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+  live?: boolean;
+}) {
   return (
     <div className="flex items-center justify-center gap-2 bg-white/5 border border-white/10 rounded-xl py-2 md:py-2.5">
       <span className="text-[#f5b301]">{icon}</span>
-      <span className="text-white font-extrabold text-base md:text-xl">{value}</span>
+      <span className="text-white font-extrabold text-base md:text-xl">
+        {value}
+      </span>
       <span className="text-purple-300 text-[10px] md:text-xs font-semibold uppercase tracking-wide flex items-center gap-1">
         {label}
-        {live && <span className="w-1.5 h-1.5 bg-[#dc2626] rounded-full animate-live-pulse" />}
+        {live && (
+          <span className="w-1.5 h-1.5 bg-[#dc2626] rounded-full animate-live-pulse" />
+        )}
       </span>
     </div>
   );
@@ -270,16 +336,27 @@ function ResultBoard({ games }: { games: GameResult[] }) {
           <table className="w-full table-fixed text-sm md:text-base border-collapse">
             <thead>
               <tr className="bg-[#2e1065] text-[#f5d67a] text-xs md:text-sm uppercase">
-                <th className="py-2.5 px-1 md:px-3 font-bold border border-[#5b21b6] text-left w-[46%] md:w-auto">Game</th>
-                <th className="py-2.5 px-1 md:px-3 font-bold border border-[#5b21b6] text-center hidden md:table-cell">Time</th>
-                <th className="py-2.5 px-1 md:px-3 font-bold border border-[#5b21b6] text-center w-[27%] md:w-auto">Yesterday</th>
-                <th className="py-2.5 px-1 md:px-3 font-bold border border-[#5b21b6] text-center w-[27%] md:w-auto">Today</th>
+                <th className="py-2.5 px-1 md:px-3 font-bold border border-[#5b21b6] text-left w-[46%] md:w-auto">
+                  Game
+                </th>
+                <th className="py-2.5 px-1 md:px-3 font-bold border border-[#5b21b6] text-center hidden md:table-cell">
+                  Time
+                </th>
+                <th className="py-2.5 px-1 md:px-3 font-bold border border-[#5b21b6] text-center w-[27%] md:w-auto">
+                  Yesterday
+                </th>
+                <th className="py-2.5 px-1 md:px-3 font-bold border border-[#5b21b6] text-center w-[27%] md:w-auto">
+                  Today
+                </th>
               </tr>
             </thead>
             <tbody>
               {games.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="py-8 text-center text-gray-400 font-medium border border-[#e6def7]">
+                  <td
+                    colSpan={4}
+                    className="py-8 text-center text-gray-400 font-medium border border-[#e6def7]"
+                  >
                     Loading live results&hellip;
                   </td>
                 </tr>
@@ -294,15 +371,20 @@ function ResultBoard({ games }: { games: GameResult[] }) {
                 return (
                   <tr
                     key={game.name + i}
-                    className={`text-center ${i % 2 === 0 ? "bg-white" : "bg-[#f6f2fd]"}`}
+                    className={`text-center ${
+                      i % 2 === 0 ? "bg-white" : "bg-[#f6f2fd]"
+                    }`}
                   >
                     <td className="py-2 px-1.5 md:px-3 text-left border border-[#e6def7]">
                       <div className="flex items-center gap-2 md:gap-3">
-
                         <div className="min-w-0">
-                          <div className="leading-tight break-words font-extrabold text-[#2e1065] uppercase text-[16px] md:text-2xl">{game.name}</div>
+                          <div className="leading-tight break-words font-extrabold text-[#2e1065] uppercase text-[16px] md:text-2xl">
+                            {game.name}
+                          </div>
                           <div className="flex items-center gap-2 mt-0.5">
-                            <span className="text-[11px] md:hidden text-gray-500 font-medium">{game.time}</span>
+                            <span className="text-[11px] md:hidden text-gray-500 font-extrabold">
+                              {game.time}
+                            </span>
                             <Link
                               href={`/chart/${slug}`}
                               className="text-[12px] md:text-sm font-bold text-[#7c3aed] hover:text-[#4c1d95]"
@@ -366,8 +448,13 @@ function GameSection({
           className="text-white text-center py-2.5 px-3 text-sm md:text-base font-bold uppercase tracking-wide border-b-2 border-[#f5b301]"
           style={{ backgroundColor: barColor }}
         >
-          {title} {isLive && <span className="inline-block w-2 h-2 bg-white rounded-full animate-live-pulse ml-1" />}
-          <span className="block text-[11px] md:text-xs font-normal normal-case tracking-normal opacity-90">{subtitle}</span>
+          {title}{" "}
+          {isLive && (
+            <span className="inline-block w-2 h-2 bg-white rounded-full animate-live-pulse ml-1" />
+          )}
+          <span className="block text-[11px] md:text-xs font-normal normal-case tracking-normal opacity-90">
+            {subtitle}
+          </span>
         </div>
 
         {/* Table */}
@@ -375,10 +462,18 @@ function GameSection({
           <table className="w-full table-fixed text-sm md:text-base border-collapse">
             <thead>
               <tr className="bg-[#2e1065] text-[#f5d67a] text-xs md:text-sm uppercase">
-                <th className="py-2 px-1 md:px-3 font-bold border border-[#5b21b6] text-left w-[46%] md:w-auto">Game</th>
-                <th className="py-2 px-1 md:px-3 font-bold border border-[#5b21b6] text-center hidden md:table-cell">Time</th>
-                <th className="py-2 px-1 md:px-3 font-bold border border-[#5b21b6] text-center w-[27%] md:w-auto">Yest.</th>
-                <th className="py-2 px-1 md:px-3 font-bold border border-[#5b21b6] text-center w-[27%] md:w-auto">Today</th>
+                <th className="py-2 px-1 md:px-3 font-bold border border-[#5b21b6] text-left w-[46%] md:w-auto">
+                  Game
+                </th>
+                <th className="py-2 px-1 md:px-3 font-bold border border-[#5b21b6] text-center hidden md:table-cell">
+                  Time
+                </th>
+                <th className="py-2 px-1 md:px-3 font-bold border border-[#5b21b6] text-center w-[27%] md:w-auto">
+                  Yest.
+                </th>
+                <th className="py-2 px-1 md:px-3 font-bold border border-[#5b21b6] text-center w-[27%] md:w-auto">
+                  Today
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -387,12 +482,18 @@ function GameSection({
                 return (
                   <tr
                     key={game.name + i}
-                    className={`text-center ${i % 2 === 0 ? "bg-white" : "bg-[#f6f2fd]"}`}
+                    className={`text-center ${
+                      i % 2 === 0 ? "bg-white" : "bg-[#f6f2fd]"
+                    }`}
                   >
                     <td className="py-2 px-1.5 md:px-3 text-left border border-[#e6def7]">
-                      <div className="leading-tight break-words font-extrabold text-[#2e1065] uppercase text-[17px] md:text-2xl">{game.name}</div>
+                      <div className="leading-tight break-words font-extrabold text-[#2e1065] uppercase text-[17px] md:text-2xl">
+                        {game.name}
+                      </div>
                       <div className="flex items-center gap-2 mt-0.5">
-                        <span className="text-[11px] md:hidden text-gray-500 font-medium">{game.time}</span>
+                        <span className="text-[11px] md:hidden text-gray-500 font-medium">
+                          {game.time}
+                        </span>
                         <Link
                           href={`/chart/${slug}`}
                           className="text-[12px] md:text-sm font-bold text-[#7c3aed] hover:text-[#4c1d95]"
@@ -446,7 +547,7 @@ function KeywordButtons({ monthYear }: { monthYear: string }) {
     <section className="space-y-3">
       {/* Top full-width bar */}
       <Link
-        href="/charts"
+        href="/"
         className="block w-full text-center bg-gradient-to-r from-[#4c1d95] to-[#6d28d9] text-white font-bold text-sm md:text-lg py-3 md:py-4 rounded-xl shadow-md border-2 border-[#f5b301] hover:brightness-110 transition-all"
       >
         Click here to view the latest chart for all games for {monthYear}
@@ -454,14 +555,24 @@ function KeywordButtons({ monthYear }: { monthYear: string }) {
 
       {/* Keyword grid — 2 per row */}
       <div className="grid grid-cols-2 gap-3 md:gap-4">
-        {KEYWORD_BUTTONS.map((kw) => (
+        {/* {KEYWORD_BUTTONS.map((kw) => (
           <Link
             key={kw}
-            href="/charts"
+            href="/"
+            scroll={true}
             className="text-center bg-gradient-to-b from-[#f5b301] to-[#d4a017] text-[#2e1065] font-extrabold text-xs sm:text-sm md:text-lg py-3.5 md:py-4 rounded-xl border-2 border-[#7c3aed] shadow-sm hover:from-[#ffc93c] hover:to-[#e0b43a] hover:shadow-md transition-all"
           >
             {kw}
           </Link>
+        ))} */}
+        {KEYWORD_BUTTONS.map((kw) => (
+          <a
+            key={kw}
+            href="/"
+            className="text-center bg-gradient-to-b from-[#f5b301] to-[#d4a017] text-[#2e1065] font-extrabold text-xs sm:text-sm md:text-lg py-3.5 md:py-4 rounded-xl border-2 border-[#7c3aed]"
+          >
+            {kw}
+          </a>
         ))}
       </div>
     </section>
@@ -522,7 +633,9 @@ function GameScheduleSection({ games }: { games: GameResult[] }) {
             <div
               key={i}
               className={`flex items-center gap-2 py-2.5 md:py-3 ${
-                i !== gameSchedule.length - 1 ? "border-b border-dashed border-[#E0CF8A]" : ""
+                i !== gameSchedule.length - 1
+                  ? "border-b border-dashed border-[#E0CF8A]"
+                  : ""
               }`}
             >
               <span className="text-lg md:text-xl">&#9200;</span>
@@ -540,12 +653,20 @@ function GameScheduleSection({ games }: { games: GameResult[] }) {
         {/* Rate cards */}
         <div className="max-w-md mx-auto mt-6 md:mt-8 grid grid-cols-2 gap-3 md:gap-4">
           <div className="bg-white rounded-xl border-2 border-[#7c3aed] px-4 py-3 shadow-sm">
-            <p className="text-gray-500 font-bold text-[11px] md:text-xs uppercase tracking-widest">Jodi Rate</p>
-            <p className="text-[#4c1d95] font-extrabold text-2xl md:text-3xl mt-0.5">10-950</p>
+            <p className="text-gray-500 font-bold text-[11px] md:text-xs uppercase tracking-widest">
+              Jodi Rate
+            </p>
+            <p className="text-[#4c1d95] font-extrabold text-2xl md:text-3xl mt-0.5">
+              10-950
+            </p>
           </div>
           <div className="bg-white rounded-xl border-2 border-[#7c3aed] px-4 py-3 shadow-sm">
-            <p className="text-gray-500 font-bold text-[11px] md:text-xs uppercase tracking-widest">Haruf Rate</p>
-            <p className="text-[#4c1d95] font-extrabold text-2xl md:text-3xl mt-0.5">100-950</p>
+            <p className="text-gray-500 font-bold text-[11px] md:text-xs uppercase tracking-widest">
+              Haruf Rate
+            </p>
+            <p className="text-[#4c1d95] font-extrabold text-2xl md:text-3xl mt-0.5">
+              100-950
+            </p>
           </div>
         </div>
 
@@ -561,15 +682,22 @@ function GameScheduleSection({ games }: { games: GameResult[] }) {
         </a>
 
         <a
-          href={`https://wa.me/${phone.replace(/[^0-9]/g, "")}?text=${encodeURIComponent("GALI KING")}`}
+          href={`https://wa.me/${phone.replace(
+            /[^0-9]/g,
+            ""
+          )}?text=${encodeURIComponent("GALI KING")}`}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-3 bg-[#25D366] hover:bg-[#1fb855] text-white font-extrabold text-lg md:text-xl px-8 py-3.5 rounded-full shadow-lg shadow-green-500/20 transition-all hover:scale-105 mt-6 md:mt-8"
         >
           <FaWhatsapp className="w-7 h-7 md:w-8 md:h-8" />
           <div className="text-left">
-            <div className="text-lg md:text-xl font-extrabold leading-tight">WhatsApp</div>
-            <div className="text-xs font-semibold opacity-90">Click To Chat</div>
+            <div className="text-lg md:text-xl font-extrabold leading-tight">
+              WhatsApp
+            </div>
+            <div className="text-xs font-semibold opacity-90">
+              Click To Chat
+            </div>
           </div>
         </a>
       </div>
@@ -581,7 +709,10 @@ function GameScheduleSection({ games }: { games: GameResult[] }) {
 
 function TelegramSection() {
   const phone = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "911234567890";
-  const waLink = `https://wa.me/${phone.replace(/[^0-9]/g, "")}?text=${encodeURIComponent("GALI KING")}`;
+  const waLink = `https://wa.me/${phone.replace(
+    /[^0-9]/g,
+    ""
+  )}?text=${encodeURIComponent("GALI KING")}`;
 
   return (
     <div className="sa opacity-0 translate-y-8 bg-gradient-to-b from-[#2e1065] to-[#4c1d95] rounded-xl border border-[#5b21b6] p-5 md:p-8 text-center space-y-4 shadow-lg">
@@ -592,7 +723,8 @@ function TelegramSection() {
         Satta King Daily Passing Tricks
       </h3>
       <p className="text-purple-200 text-sm md:text-base leading-relaxed max-w-lg mx-auto">
-        Delhi Bazar se Disawar tak daily passing pane ke liye hamare WhatsApp par contact karein.
+        Delhi Bazar se Disawar tak daily passing pane ke liye hamare WhatsApp
+        par contact karein.
       </p>
       <a
         href={waLink}
@@ -604,7 +736,8 @@ function TelegramSection() {
         Join Now
       </a>
       <p className="text-purple-300 text-xs md:text-sm leading-relaxed max-w-lg mx-auto">
-        Website ko bookmark kar lo, taaki aapko rozana 2-3 game passing aur latest updates milti rahein.
+        Website ko bookmark kar lo, taaki aapko rozana 2-3 game passing aur
+        latest updates milti rahein.
       </p>
     </div>
   );
@@ -616,34 +749,59 @@ function SeoContent() {
   const year = new Date().getFullYear();
   return (
     <div className="sa opacity-0 translate-y-8 bg-white rounded-xl border border-[#e6def7] p-4 md:p-8 space-y-4 md:space-y-5 text-xs md:text-sm text-gray-600 leading-relaxed shadow-sm">
-      <h2 className="text-xl md:text-2xl font-extrabold text-[#2e1065]">Satta King Gali Result {year}</h2>
+      <h2 className="text-xl md:text-2xl font-extrabold text-[#2e1065]">
+        Satta King Gali Result {year}
+      </h2>
       <p>
-        Welcome to SattaKing-Gali, where you can check the latest Satta King results updated every day. We provide fast and accurate results for popular markets including Gali, Desawar, Faridabad, Ghaziabad, Delhi Bazar and Shree Ganesh. Our goal is to make it easy for visitors to find today&apos;s results, previous records and daily updates in one place.
+        Welcome to SattaKing-Gali, where you can check the latest Satta King
+        results updated every day. We provide fast and accurate results for
+        popular markets including Gali, Desawar, Faridabad, Ghaziabad, Delhi
+        Bazar and Shree Ganesh. Our goal is to make it easy for visitors to find
+        today&apos;s results, previous records and daily updates in one place.
       </p>
 
-      <h2 className="text-xl font-bold text-[#2e1065]">Live Satta King Result</h2>
+      <h2 className="text-xl font-bold text-[#2e1065]">
+        Live Satta King Result
+      </h2>
       <p>
-        Our website updates the latest Satta King results throughout the day. Whether you are looking for Gali Result, Desawar Result, Faridabad Result or Ghaziabad Result, you can check all available market results quickly.
+        Our website updates the latest Satta King results throughout the day.
+        Whether you are looking for Gali Result, Desawar Result, Faridabad
+        Result or Ghaziabad Result, you can check all available market results
+        quickly.
       </p>
 
       <h2 className="text-xl font-bold text-[#2e1065]">Gali Result Today</h2>
       <p>
-        Gali is one of the most searched Satta markets. We publish the latest Gali Result along with previous records so users can easily review earlier outcomes.
+        Gali is one of the most searched Satta markets. We publish the latest
+        Gali Result along with previous records so users can easily review
+        earlier outcomes.
       </p>
 
       <h2 className="text-xl font-bold text-[#2e1065]">Desawar Result Today</h2>
       <p>
-        Find the latest Desawar Result with daily updates. Historical results are also available to help visitors check previous records.
+        Find the latest Desawar Result with daily updates. Historical results
+        are also available to help visitors check previous records.
       </p>
 
       <h2 className="text-xl font-bold text-[#2e1065]">Satta King Chart</h2>
       <p>
-        Our website also provides Satta King charts for different markets. You can view old records and previous results for reference using the Record Chart links beside each game.
+        Our website also provides Satta King charts for different markets. You
+        can view old records and previous results for reference using the Record
+        Chart links beside each game.
       </p>
 
-      <h2 className="text-xl font-bold text-[#2e1065]">Why Choose SattaKing-Gali?</h2>
+      <h2 className="text-xl font-bold text-[#2e1065]">
+        Why Choose SattaKing-Gali?
+      </h2>
       <ul className="list-none space-y-2 pl-0">
-        {["Fast daily result updates", "Mobile-friendly website", "Easy navigation", "Daily market records", "Historical charts", "Simple and clean design"].map((t) => (
+        {[
+          "Fast daily result updates",
+          "Mobile-friendly website",
+          "Easy navigation",
+          "Daily market records",
+          "Historical charts",
+          "Simple and clean design",
+        ].map((t) => (
           <li key={t} className="flex items-start gap-2">
             <span className="text-[#f5b301] mt-0.5">&#10003;</span>
             <span>{t}</span>
@@ -651,31 +809,55 @@ function SeoContent() {
         ))}
       </ul>
 
-      <h2 className="text-xl font-bold text-[#2e1065]">Frequently Asked Questions</h2>
+      <h2 className="text-xl font-bold text-[#2e1065]">
+        Frequently Asked Questions
+      </h2>
       <div className="space-y-3">
         <div>
-          <h3 className="text-base font-bold text-[#2e1065]">What is SattaKing-Gali?</h3>
+          <h3 className="text-base font-bold text-[#2e1065]">
+            What is SattaKing-Gali?
+          </h3>
           <p>
-            SattaKing-Gali shows the latest daily results for popular Satta King markets including Gali, Desawar, Faridabad and Ghaziabad.
+            SattaKing-Gali shows the latest daily results for popular Satta King
+            markets including Gali, Desawar, Faridabad and Ghaziabad.
           </p>
         </div>
         <div>
-          <h3 className="text-base font-bold text-[#2e1065]">How often are results updated?</h3>
-          <p>Results are updated as soon as the respective market declares them.</p>
+          <h3 className="text-base font-bold text-[#2e1065]">
+            How often are results updated?
+          </h3>
+          <p>
+            Results are updated as soon as the respective market declares them.
+          </p>
         </div>
         <div>
-          <h3 className="text-base font-bold text-[#2e1065]">Can I check old Satta results?</h3>
-          <p>Yes. Previous results and charts are available for different markets.</p>
+          <h3 className="text-base font-bold text-[#2e1065]">
+            Can I check old Satta results?
+          </h3>
+          <p>
+            Yes. Previous results and charts are available for different
+            markets.
+          </p>
         </div>
         <div>
-          <h3 className="text-base font-bold text-[#2e1065]">Is this website mobile friendly?</h3>
-          <p>Yes. The website is designed to work smoothly on mobile, tablet and desktop devices.</p>
+          <h3 className="text-base font-bold text-[#2e1065]">
+            Is this website mobile friendly?
+          </h3>
+          <p>
+            Yes. The website is designed to work smoothly on mobile, tablet and
+            desktop devices.
+          </p>
         </div>
       </div>
 
       <h3 className="text-lg font-bold text-[#2e1065]">Disclaimer</h3>
       <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 text-xs text-purple-800">
-        This website is provided for informational purposes only. We do not own, operate, or facilitate any form of online gambling, lottery, betting, or Satta Matka operations. Participation in these activities may be illegal or restricted under your local state laws. Visitors should use the information responsibly and comply with the laws applicable in their location.
+        This website is provided for informational purposes only. We do not own,
+        operate, or facilitate any form of online gambling, lottery, betting, or
+        Satta Matka operations. Participation in these activities may be illegal
+        or restricted under your local state laws. Visitors should use the
+        information responsibly and comply with the laws applicable in their
+        location.
       </div>
       <div className="h-20" />
     </div>
