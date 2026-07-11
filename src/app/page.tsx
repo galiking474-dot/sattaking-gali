@@ -298,9 +298,7 @@ function ResultBoard({ games }: { games: GameResult[] }) {
                   >
                     <td className="py-2 px-1.5 md:px-3 text-left border border-[#e6def7]">
                       <div className="flex items-center gap-2 md:gap-3">
-                        <span className="shrink-0 w-8 h-8 md:w-11 md:h-11 rounded-full bg-gradient-to-br from-[#4c1d95] to-[#7c3aed] text-[#f5b301] font-extrabold text-sm md:text-xl flex items-center justify-center shadow-sm">
-                          {game.name.charAt(0)}
-                        </span>
+
                         <div className="min-w-0">
                           <div className="leading-tight break-words font-extrabold text-[#2e1065] uppercase text-[16px] md:text-2xl">{game.name}</div>
                           <div className="flex items-center gap-2 mt-0.5">
