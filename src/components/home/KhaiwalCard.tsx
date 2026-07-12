@@ -1,13 +1,40 @@
-import { FiPhone } from "react-icons/fi";
 import { FaWhatsapp } from "react-icons/fa";
+
+// English → Hindi names for the game schedule shown in the khaiwal chart.
+// Scraped game names arrive in English; display them in Hindi (fall back to
+// the original name for anything not in the map).
+const HINDI_NAMES: Record<string, string> = {
+  "shivdham": "शिवधाम",
+  "shiv dham": "शिवधाम",
+  "delhi bazar": "दिल्ली बाजार",
+  "delhi bazaar": "दिल्ली बाजार",
+  "shree ganesh": "श्री गणेश",
+  "shri ganesh": "श्री गणेश",
+  "faridabad": "फरीदाबाद",
+  "faridabad day": "फरीदाबाद डे",
+  "ghaziabad": "गाज़ियाबाद",
+  "gaziabad": "गाज़ियाबाद",
+  "gali": "गली",
+  "disawar": "दिसावर",
+  "desawar": "दिसावर",
+  "old alwar": "ओल्ड अलवर",
+  "dehradun city": "देहरादून सिटी",
+  "dehradun": "देहरादून",
+  "old delhi": "पुरानी दिल्ली",
+  "hindustan": "हिंदुस्तान",
+};
+
+function toHindiName(name: string): string {
+  return HINDI_NAMES[name.trim().toLowerCase().replace(/\s+/g, " ")] ?? name;
+}
 
 // Khaiwal contact / game-schedule card. Shared by the homepage and each
 // per-game page. Pass the schedule to display (name + time).
 export function KhaiwalCard({
   games,
-  heading = "Game Schedule & Contact",
 }: {
   games: { name: string; time: string }[];
+  // Accepted for backwards-compat with callers; the heading block was removed.
   heading?: string;
 }) {
   const phone = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "911234567890";
@@ -26,95 +53,75 @@ export function KhaiwalCard({
 
   return (
     <section>
-      <div className="flex items-center gap-2.5 md:gap-3 mb-3">
-        <div className="p-2 rounded-lg bg-[#d97706] text-white shrink-0">
-          <FiPhone size={18} />
-        </div>
-        <div className="min-w-0">
-          <h2 className="text-xl md:text-lg font-extrabold text-[#a5370c]">
-            {heading}
-          </h2>
-          <p className="text-[14px] md:text-xs text-[#8a6d2f]">
-            Game play करने के लिये संपर्क करे
-          </p>
-        </div>
-      </div>
-
-      {/* Gold contact card with amber dashed border */}
+      {/* Khaiwal contact card — yellow, classic khaiwal-poster layout */}
       <div className="rounded-2xl border-2 border-dashed border-[#e0850b] bg-gradient-to-b from-[#FFD93B] via-[#FCE684] to-[#FEF9E7] px-4 md:px-10 py-6 md:py-9 text-center shadow-lg">
         <p className="text-[#3a1d00] font-extrabold text-base md:text-2xl tracking-tight">
-          &#11088; Direct Company No.1 Khaiwal &#11088;
+          --सीधे सट्टा कंपनी का No 1 खाईवाल--
         </p>
-        <p className="text-[#a5370c] font-extrabold text-3xl md:text-5xl mt-1.5 md:mt-2 tracking-tight">
-          GALI KING
+        <p className="text-[#a5370c] font-extrabold text-2xl md:text-4xl mt-2 md:mt-3 tracking-tight">
+          &#9819; GALI KING &#9819;
         </p>
 
         {/* Game Schedule List */}
-        <div className="max-w-xl mx-auto mt-5 md:mt-7 bg-[#FFFBEA] rounded-2xl border border-[#EBD98A] shadow-sm px-4 md:px-7 py-3 md:py-4 text-left">
+        <div className="max-w-md mx-auto mt-5 md:mt-7 text-left">
           {schedule.map((game, i) => (
             <div
               key={i}
-              className={`flex items-center gap-2 py-2.5 md:py-3 ${
-                i !== schedule.length - 1
-                  ? "border-b border-dashed border-[#E0CF8A]"
-                  : ""
-              }`}
+              className="flex items-center gap-2 py-1.5 md:py-2 text-[#3a1d00] font-bold text-base md:text-xl"
             >
               <span className="text-lg md:text-xl">&#9200;</span>
-              <span className="text-[#3a1d00] font-bold text-base md:text-xl">
-                {game.name}
-              </span>
-              <span className="flex-1" />
-              <span className="text-[#3a1d00] font-extrabold text-base md:text-xl tracking-wide">
-                {game.time}
-              </span>
+              <span>{toHindiName(game.name)}</span>
+              <span className="flex-1 border-b-2 border-dotted border-[#c9a94e] mx-1" />
+              <span className="font-extrabold tracking-wide">{game.time}</span>
             </div>
           ))}
         </div>
 
-        {/* Rate cards */}
-        <div className="max-w-md mx-auto mt-6 md:mt-8 grid grid-cols-2 gap-3 md:gap-4">
-          <div className="bg-white rounded-xl border-2 border-[#e0850b] px-4 py-3 shadow-sm">
-            <p className="text-[#8a6d2f] font-bold text-[11px] md:text-xs uppercase tracking-widest">
-              Jodi Rate
-            </p>
-            <p className="text-[#a5370c] font-extrabold text-2xl md:text-3xl mt-0.5">
-              10-950
-            </p>
-          </div>
-          <div className="bg-white rounded-xl border-2 border-[#e0850b] px-4 py-3 shadow-sm">
-            <p className="text-[#8a6d2f] font-bold text-[11px] md:text-xs uppercase tracking-widest">
-              Haruf Rate
-            </p>
-            <p className="text-[#a5370c] font-extrabold text-2xl md:text-3xl mt-0.5">
-              100-950
-            </p>
-          </div>
-        </div>
-
-        <p className="text-[#3a1d00] font-extrabold text-sm md:text-lg uppercase tracking-wide mt-6 md:mt-8">
-          PAYTM &bull; PHONEPE &bull; GOOGLE PAY &bull; BANK TRANSFER
+        {/* Payment options */}
+        <p className="text-[#3a1d00] font-extrabold text-base md:text-xl mt-6 md:mt-8">
+          &#128184; Payment Option &#128184;
+        </p>
+        <p className="text-[#3a1d00] font-bold text-sm md:text-lg mt-1">
+          PAYTM // BANK TRANSFER // PHONE PAY // GOOGLE PAY
         </p>
 
-        <a
-          href={`tel:+${digits}`}
-          className="block text-[#a5370c] font-extrabold text-3xl md:text-5xl tracking-tight underline underline-offset-4 decoration-2 mt-5 md:mt-7 hover:text-[#d97706] transition-colors break-all"
-        >
-          +{digits}
-        </a>
+        {/* Rate list */}
+        <p className="text-[#3a1d00] font-extrabold text-base md:text-xl mt-6 md:mt-8">
+          &#129297; Rate list &#128184;
+        </p>
+        <p className="text-[#3a1d00] font-bold text-base md:text-xl mt-1">
+          जोड़ी रेट 10 &mdash;&mdash; 950
+        </p>
+        <p className="text-[#3a1d00] font-bold text-base md:text-xl">
+          हरूफ रेट 100 &mdash;&mdash; 950
+        </p>
+
+        {/* Brand again */}
+        <p className="text-[#a5370c] font-extrabold text-2xl md:text-4xl mt-6 md:mt-8 tracking-tight">
+          &#9819; GALI KING &#9819;
+        </p>
+
+        {/* Red call-to-action */}
+        <p className="text-[#dc2626] font-extrabold text-base md:text-xl mt-4">
+          Game play करने के लिये नीचे लिंक पर क्लिक करे
+        </p>
 
         <a
           href={`https://wa.me/${digits}?text=${encodeURIComponent("GALI KING")}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-3 bg-[#25D366] hover:bg-[#1fb855] text-white font-extrabold text-lg md:text-xl px-8 py-3.5 rounded-full shadow-lg shadow-green-500/20 transition-all hover:scale-105 mt-6 md:mt-8"
+          className="inline-flex items-center gap-3 md:gap-4 bg-[#25D366] hover:bg-[#1fb855] pl-2 pr-6 md:pr-8 py-2 rounded-full shadow-lg shadow-green-500/20 transition-all hover:scale-105 mt-6 md:mt-8"
         >
-          <FaWhatsapp className="w-7 h-7 md:w-8 md:h-8" />
-          <div className="text-left">
-            <div className="text-lg md:text-xl font-extrabold leading-tight">
+          <span className="inline-flex items-center justify-center w-12 h-12 md:w-14 md:h-14 rounded-full bg-white shadow-inner shrink-0">
+            <FaWhatsapp className="w-9 h-9 md:w-11 md:h-11 text-[#25D366]" />
+          </span>
+          <div className="text-left leading-tight">
+            <div className="text-[#1b3a1c] font-extrabold text-2xl md:text-3xl">
               WhatsApp
             </div>
-            <div className="text-xs font-semibold opacity-90">Click To Chat</div>
+            <div className="text-white font-extrabold text-xl md:text-2xl">
+              Click to chat
+            </div>
           </div>
         </a>
       </div>

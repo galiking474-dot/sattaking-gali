@@ -21,15 +21,15 @@ export function WhatsAppModal() {
   if (!show) return null;
 
   return (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[100] w-full max-w-sm px-4">
+    <div className="fixed bottom-6 right-4 md:right-6 z-[100]">
       <a
-        href={getWhatsAppLink(phone, "VP BHAI")}
+        href={getWhatsAppLink(phone, "GALI KING")}
         target="_blank"
         rel="noopener noreferrer"
-        className="flex items-center justify-center gap-3 w-full bg-[#25D366] hover:bg-[#1fb855] text-white font-extrabold text-lg px-6 py-3.5 rounded-full shadow-lg shadow-green-500/25 transition-all hover:scale-[1.03] hover:shadow-green-400/40 animate-scaleIn"
+        aria-label="Game खेलने के लिए संपर्क करें"
+        className="flex items-center justify-center bg-[#25D366] hover:bg-[#1fb855] text-white p-3.5 rounded-full shadow-lg shadow-green-500/25 transition-all hover:scale-110 hover:shadow-green-400/40 animate-scaleIn"
       >
         <FaWhatsapp className="w-7 h-7" />
-        Game खेलने के लिए संपर्क करें
       </a>
     </div>
   );

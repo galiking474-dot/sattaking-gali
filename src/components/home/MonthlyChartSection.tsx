@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { format } from "date-fns";
-import { FiBarChart2 } from "react-icons/fi";
 import type { ChartRow } from "@/lib/types";
 
 export function MonthlyChartSection({
@@ -55,18 +54,6 @@ export function MonthlyChartSection({
 
   return (
     <div className="">
-      <div className="flex items-center gap-2.5 md:gap-3 mb-3">
-        <div className="p-2 rounded-lg bg-[#d97706] text-white shrink-0">
-          <FiBarChart2 size={18} />
-        </div>
-        <div className="min-w-0">
-          <h2 className="text-xl md:text-lg font-extrabold text-[#a5370c]">Monthly Chart {displayYear}</h2>
-          <p className="text-[14px] md:text-xs text-[#8a6d2f] truncate">
-            {displayMonth} {displayYear} &mdash; Gali, Desawar, Ghaziabad, Faridabad &amp; more
-          </p>
-        </div>
-      </div>
-
       <div className="bg-white rounded-xl border-2 border-[#e0850b] overflow-hidden shadow-lg">
         <div className="bg-gradient-to-r from-[#FFD93B] to-[#F5A623] text-[#a5370c] text-center py-2.5 md:py-3 text-[14px] md:text-sm font-bold px-2 md:px-3 leading-relaxed border-b-2 border-[#e0850b]">
           Satta King Chart {displayMonth} {displayYear} <span className="hidden sm:inline">&mdash; Faridabad, Ghaziabad, Gali, Shri Ganesh, Delhi Bazar &amp; Desawar</span>

@@ -1,7 +1,7 @@
+import { Fragment } from "react";
 import { AdSlot } from "@/components/layout/AdSlot";
 import Link from "next/link";
 import { format } from "date-fns";
-import { FaWhatsapp, FaTelegramPlane } from "react-icons/fa";
 import { WhatsAppModal } from "@/components/layout/WhatsAppModal";
 import { MonthlyChartSection } from "@/components/home/MonthlyChartSection";
 import { KhaiwalCard } from "@/components/home/KhaiwalCard";
@@ -90,34 +90,38 @@ export default async function HomePage() {
       {/* Hero */}
       <div
         id="top"
-        className="bg-gradient-to-b from-[#FFD93B] to-[#F5A623] text-[#3a1d00] text-center py-5 md:py-8 px-3 md:px-4 border-b-4 border-[#e0850b]"
+        className="bg-white text-[#3a1d00] text-center py-5 md:py-8 px-3 md:px-4 border-b-4 border-[#e0850b]"
       >
-        <h1 className="text-2xl sm:text-xl md:text-4xl font-extrabold tracking-tight mb-1 md:mb-2">
-          Satta King Gali Result {year} &mdash; Live Gali, Desawar, Faridabad
-          &amp; Ghaziabad
+        <h1 className="text-lg sm:text-xl md:text-2xl font-normal tracking-tight mb-1 md:mb-2">
+          Satta King Gali {year}: Fast Live Results for Desawar, Faridabad,
+          Ghaziabad, Gali &amp; More &mdash; Updated Every Day
         </h1>
-        <div className="mt-2.5 md:mt-4 inline-flex items-center gap-1.5 md:gap-2 bg-white/50 border border-[#e0850b]/50 rounded-full px-3 md:px-5 py-1.5 md:py-2 text-[14px] md:text-xs text-[#7a4a00] font-semibold">
-          <span className="w-1.5 h-1.5 md:w-2 md:h-2 bg-[#a5370c] rounded-full animate-live-pulse" />
-          Last Updated: {updatedAt}
-        </div>
 
         {/* Featured market quick-links */}
         <FeaturedGameLinks />
       </div>
 
       {/* Disclaimer */}
-      <div className="bg-[#a5370c] border-b border-[#7a2b08] py-1.5 md:py-2 px-2 md:px-4">
-        <p className="text-center text-[12px] sm:text-[10px] md:text-xs text-[#ffe6c7] max-w-4xl mx-auto leading-relaxed">
-          <span className="font-bold text-[#FFE071]">DISCLAIMER:</span>{" "}
+      <div className="bg-red-600 border-b border-red-800 py-1.5 md:py-2 px-2 md:px-4">
+        <p className="text-center text-[12px] sm:text-[10px] md:text-xs text-white max-w-4xl mx-auto leading-relaxed">
+          <span className="font-bold text-white">DISCLAIMER:</span>{" "}
           SattaKing-Gali.com is an independent informational website. We do not
           promote gambling or betting.{" "}
           <Link
             href="/disclaimer"
-            className="text-[#FFE071] hover:underline font-medium"
+            className="text-white underline hover:no-underline font-medium"
           >
             Read Full Disclaimer
           </Link>
         </p>
+      </div>
+
+      {/* Last Updated — sits below the disclaimer */}
+      <div className="bg-white text-center py-2.5 md:py-3 px-3">
+        <div className="inline-flex items-center gap-1.5 md:gap-2 text-[14px] md:text-xs text-black font-semibold">
+          <span className="w-1.5 h-1.5 md:w-2 md:h-2 bg-[#a5370c] rounded-full animate-live-pulse" />
+          Last Updated: {updatedAt}
+        </div>
       </div>
 
       {/* Scoreboard spotlight — distinct hero band */}
@@ -149,41 +153,39 @@ export default async function HomePage() {
           />
         )}
 
-        {/* LIVE — games currently being declared (from shared Firebase) */}
-        {liveResults.length > 0 && (
-          <GameSection
-            title="LIVE Results"
-            subtitle="Games currently being declared"
-            barColor="#dc2626"
-            games={liveResults}
-            isLive
-          />
-        )}
-
-        {/* NEXT — upcoming */}
-        {nextResults.length > 0 && (
-          <GameSection
-            title="Upcoming Results"
-            subtitle="These games will be declared soon"
-            barColor="#ea580c"
-            games={nextResults}
-          />
-        )}
-
-        {/* REST — declared */}
-        {restResults.length > 0 && (
-          <GameSection
-            title="Declared Results"
-            subtitle="Today's completed game results"
-            barColor="#059669"
-            games={restResults}
+        {/* LIVE / Upcoming / Declared — one shared table header, grouped rows */}
+        {(liveResults.length > 0 ||
+          nextResults.length > 0 ||
+          restResults.length > 0) && (
+          <CombinedResults
+            groups={[
+              {
+                title: "LIVE",
+                subtitle: "Games currently being declared",
+                barColor: "#dc2626",
+                games: liveResults,
+                isLive: true,
+                icon: <FiZap className="w-5 h-5" />,
+              },
+              {
+                title: "Upcoming",
+                subtitle: "These games will be declared soon",
+                barColor: "#ea580c",
+                games: nextResults,
+                icon: <FiClock className="w-5 h-5" />,
+              },
+              {
+                title: "Declared",
+                subtitle: "Today's completed game results",
+                barColor: "#059669",
+                games: restResults,
+                icon: <FiAward className="w-5 h-5" />,
+              },
+            ]}
           />
         )}
 
         <AdSlot placement="homepage_middle" />
-
-        {/* Telegram Section */}
-        <TelegramSection />
 
         <AdSlot placement="homepage_bottom" />
 
@@ -203,7 +205,7 @@ function FeaturedGameLinks() {
         <Link
           key={g.slug}
           href={`/game/${g.slug}`}
-          className="text-center bg-white/85 hover:bg-white text-[#a5370c] font-extrabold text-[11px] sm:text-xs md:text-sm py-2 md:py-2.5 px-1 rounded-lg border border-[#e0850b] shadow-sm hover:shadow-md transition-all leading-tight"
+          className="text-center bg-[#FDF3C9] hover:bg-[#FCE684] text-[#a5370c] font-extrabold text-[11px] sm:text-xs md:text-sm py-2 md:py-2.5 px-1 rounded-lg border border-[#e0850b] shadow-sm hover:shadow-md transition-all leading-tight"
         >
           {g.name}
         </Link>
@@ -444,25 +446,30 @@ function ResultBoard({ games }: { games: GameResult[] }) {
 
   return (
     <section>
-      <div className="bg-white rounded-2xl border-2 border-[#e0850b] overflow-hidden shadow-lg">
+      <div className="bg-white rounded-2xl overflow-hidden shadow-lg">
         {/* Title Bar */}
-        <div className="bg-gradient-to-r from-[#FFD93B] to-[#F5A623] text-[#a5370c] text-center py-3 px-3 border-b-2 border-[#e0850b]">
-          <h2 className="text-base md:text-xl font-extrabold uppercase tracking-wide">
+        <div className="bg-white text-black text-center py-3 px-3 border-b-2 border-[#e0850b]">
+          <h2 className="text-base md:text-xl font-extrabold uppercase tracking-wide text-black">
             Satta King Live Result
-            <span className="inline-block w-2 h-2 bg-[#a5370c] rounded-full animate-live-pulse ml-2 align-middle" />
+            <span className="inline-block w-2 h-2 bg-[#dc2626] rounded-full animate-live-pulse ml-2 align-middle" />
           </h2>
-          <p className="text-[11px] md:text-xs font-semibold text-[#7a4a00]">
+          <p className="text-[11px] md:text-xs font-semibold text-black">
             Superfast Satta Results &mdash; {today}
+          </p>
+          <p className="text-[11px] md:text-xs font-medium text-black/70 mt-1 max-w-2xl mx-auto leading-relaxed">
+            Check today&apos;s Satta King Gali result live &mdash; fast &amp;
+            accurate Gali, Desawar, Faridabad and Ghaziabad numbers updated
+            every day.
           </p>
         </div>
 
-        {/* Table */}
+        {/* Boxes grid */}
         {games.length === 0 ? (
           <div className="py-8 text-center text-[#b09a5a] font-medium bg-[#FFFDF3]">
             Loading live results&hellip;
           </div>
         ) : (
-          <GameTable>
+          <div className="grid grid-cols-2 gap-2.5 md:gap-4 p-3 md:p-4 bg-[#FFFDF3]">
             {games.map((game, i) => {
               // The scraped `today` value lingers from the previous day after
               // midnight. Only trust it once this game's declared time has
@@ -470,65 +477,157 @@ function ResultBoard({ games }: { games: GameResult[] }) {
               const declared = isTodayResultDeclared(game.time);
               const showToday = declared && game.today;
               return (
-                <GameRow
+                <GameCard
                   key={game.name + i}
-                  i={i}
                   game={game}
                   today={showToday ? game.today : null}
                   showWatch={!showToday}
                 />
               );
             })}
-          </GameTable>
+          </div>
         )}
       </div>
     </section>
   );
 }
 
+// ─── Result box (card) — used by the first Result Board section ───
+
+function GameCard({
+  game,
+  today,
+  showWatch,
+}: {
+  game: GameResult;
+  today: string | null;
+  showWatch: boolean;
+}) {
+  const slug = game.name.toLowerCase().replace(/\s+/g, "-");
+
+  return (
+    <div className="rounded-xl border-2 border-[#f0d98a] bg-white shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col">
+      {/* Game name + time */}
+      <div className="bg-gradient-to-r from-[#FFF7DA] to-[#FCE38A] px-3 py-1.5 border-b border-[#f0d98a]">
+        <span className="block font-extrabold text-[#1e293b] uppercase text-lg md:text-xl leading-tight break-words">
+          {game.name}
+        </span>
+        <span className="inline-flex items-center gap-1 text-[10px] md:text-xs font-bold text-[#8a6d2f]">
+          <FiClock className="w-3 h-3" /> {game.time}
+        </span>
+      </div>
+
+      {/* Yesterday / Today values */}
+      <div className="grid grid-cols-2 divide-x divide-[#f0e2a6]">
+        <div className="text-center py-2">
+          <p className="text-[10px] md:text-xs font-bold uppercase tracking-wide text-[#8a6d2f]">
+            Yesterday
+          </p>
+          <p className="font-mono font-extrabold text-2xl md:text-3xl text-[#1e293b]">
+            {game.yesterday || "--"}
+          </p>
+        </div>
+        <div className="flex flex-col items-center justify-center py-2">
+          <p className="text-[10px] md:text-xs font-bold uppercase tracking-wide text-[#8a6d2f]">
+            Today
+          </p>
+          {today ? (
+            <span className="inline-block bg-[#F6D68A] border border-[#E7B85C] rounded-lg px-2.5 py-0.5 font-mono font-extrabold text-2xl md:text-3xl text-[#dc2626]">
+              {today}
+            </span>
+          ) : showWatch ? (
+            <span
+              title="Result awaited"
+              aria-label="Result awaited"
+              className="inline-flex text-[#a5370c]"
+            >
+              <FiClock className="w-6 h-6 md:w-7 md:h-7 animate-watch-tick" />
+            </span>
+          ) : (
+            <span className="font-mono font-bold text-2xl text-[#c9a94e]">
+              --
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Record chart link */}
+      <Link
+        href={`/chart/${slug}`}
+        className="mt-auto block text-center text-[11px] md:text-xs font-semibold text-[#a5370c] hover:text-[#d97706] bg-[#FFFBEA] border-t border-[#f0e2a6] py-1.5"
+      >
+        Record Chart &rarr;
+      </Link>
+    </div>
+  );
+}
+
 // ─── Generic LIVE / NEXT / REST Section (read from shared Firebase) ───
 
-function GameSection({
-  title,
-  subtitle,
-  barColor,
-  games,
-  isLive,
-}: {
+type ResultGroup = {
   title: string;
   subtitle: string;
   barColor: string;
   games: GameResult[];
   isLive?: boolean;
-}) {
+  icon?: React.ReactNode;
+};
+
+function CombinedResults({ groups }: { groups: ResultGroup[] }) {
+  const visible = groups.filter((g) => g.games.length > 0);
+
   return (
     <section>
       <div className="bg-white rounded-2xl border-2 border-[#e0850b] overflow-hidden shadow-sm">
-        {/* Title Bar */}
-        <div
-          className="text-white text-center py-2.5 px-3 text-sm md:text-base font-bold uppercase tracking-wide border-b-2 border-[#e0850b]"
-          style={{ backgroundColor: barColor }}
-        >
-          {title}{" "}
-          {isLive && (
-            <span className="inline-block w-2 h-2 bg-white rounded-full animate-live-pulse ml-1" />
-          )}
-          <span className="block text-[11px] md:text-xs font-normal normal-case tracking-normal opacity-90">
-            {subtitle}
-          </span>
-        </div>
-
-        {/* Table */}
+        {/* One shared GAME / YESTERDAY / TODAY header; each group is a
+            separator row followed by its games. */}
         <GameTable>
-          {games.map((game, i) => (
-            <GameRow
-              key={game.name + i}
-              i={i}
-              game={game}
-              today={game.today || null}
-              showWatch={!!isLive}
-              live={isLive}
-            />
+          {visible.map((group) => (
+            <Fragment key={group.title}>
+              {/* Group heading row (spans all columns) */}
+              <tr>
+                <td colSpan={3} className="p-0">
+                  <div className="flex items-center gap-2.5 md:gap-3 bg-gradient-to-r from-[#FFF7DA] to-[#FCE38A] px-3 md:px-4 py-2.5 md:py-3 border-y-2 border-[#e0850b]">
+                    <span
+                      className="inline-flex items-center justify-center w-9 h-9 md:w-10 md:h-10 rounded-lg text-white shrink-0 shadow-sm"
+                      style={{ backgroundColor: group.barColor }}
+                    >
+                      {group.icon}
+                    </span>
+                    <div className="min-w-0 flex-1 text-left">
+                      <h3
+                        className="font-extrabold uppercase tracking-wide text-sm md:text-lg leading-tight"
+                        style={{ color: group.barColor }}
+                      >
+                        {group.title}
+                        {group.isLive && (
+                          <span className="inline-block w-2 h-2 rounded-full animate-live-pulse ml-1.5 align-middle bg-current" />
+                        )}
+                      </h3>
+                      <p className="text-[11px] md:text-xs font-medium text-[#8a6d2f] leading-tight">
+                        {group.subtitle}
+                      </p>
+                    </div>
+                    <span
+                      className="shrink-0 text-[11px] md:text-xs font-bold text-white rounded-full px-2.5 py-1 shadow-sm"
+                      style={{ backgroundColor: group.barColor }}
+                    >
+                      {group.games.length}
+                    </span>
+                  </div>
+                </td>
+              </tr>
+              {group.games.map((game, i) => (
+                <GameRow
+                  key={group.title + game.name + i}
+                  i={i}
+                  game={game}
+                  today={game.today || null}
+                  showWatch={!!group.isLive}
+                  live={group.isLive}
+                />
+              ))}
+            </Fragment>
           ))}
         </GameTable>
       </div>
@@ -571,44 +670,6 @@ function KeywordButtons({ monthYear }: { monthYear: string }) {
         ))}
       </div>
     </section>
-  );
-}
-
-// ─── Telegram Section ───
-
-function TelegramSection() {
-  const phone = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "911234567890";
-  const waLink = `https://wa.me/${phone.replace(
-    /[^0-9]/g,
-    ""
-  )}?text=${encodeURIComponent("GALI KING")}`;
-
-  return (
-    <div className="sa opacity-0 translate-y-8 bg-gradient-to-b from-[#a5370c] to-[#d97706] rounded-xl border border-[#7a2b08] p-5 md:p-8 text-center space-y-4 shadow-lg">
-      <div className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-white/20 mb-1">
-        <FaTelegramPlane className="w-7 h-7 text-white" />
-      </div>
-      <h3 className="text-white font-extrabold text-lg md:text-xl">
-        Satta King Daily Passing Tricks
-      </h3>
-      <p className="text-[#ffe6c7] text-sm md:text-base leading-relaxed max-w-lg mx-auto">
-        Delhi Bazar se Disawar tak daily passing pane ke liye hamare WhatsApp
-        par contact karein.
-      </p>
-      <a
-        href={waLink}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="inline-flex items-center gap-2 bg-[#FFE071] hover:bg-[#ffd94a] text-[#a5370c] font-extrabold text-base md:text-lg px-6 py-3 rounded-full shadow-lg transition-all hover:scale-105"
-      >
-        <FaWhatsapp className="w-5 h-5" />
-        Join Now
-      </a>
-      <p className="text-[#ffdcb0] text-xs md:text-sm leading-relaxed max-w-lg mx-auto">
-        Website ko bookmark kar lo, taaki aapko rozana 2-3 game passing aur
-        latest updates milti rahein.
-      </p>
-    </div>
   );
 }
 
