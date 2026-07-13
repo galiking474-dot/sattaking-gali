@@ -13,7 +13,7 @@ export default function ContactPage() {
   const [message, setMessage] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "911234567890";
+  const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "+918973500029";
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -127,7 +127,7 @@ export default function ContactPage() {
               Get instant replies on WhatsApp. We&apos;re available 24/7.
             </p>
             <a
-              href={getWhatsAppLink(whatsappNumber, "GALI KING")}
+              href={getWhatsAppLink(whatsappNumber, "SUNNY BHAI")}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-block bg-green-500 text-white px-6 py-2.5 rounded-lg font-semibold text-sm hover:bg-green-600 transition-colors"

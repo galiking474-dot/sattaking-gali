@@ -4,7 +4,7 @@ import { FaWhatsapp } from "react-icons/fa";
 import { getWhatsAppLink } from "@/lib/utils";
 
 export function WhatsAppButton() {
-  const phone = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "911234567890";
+  const phone = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "+918973500029";
 
   return (
     <div className="fixed bottom-4 right-3 md:bottom-5 md:right-5 z-50 flex flex-col items-center gap-2">

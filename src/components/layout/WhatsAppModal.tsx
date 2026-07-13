@@ -6,7 +6,7 @@ import { getWhatsAppLink } from "@/lib/utils";
 
 export function WhatsAppModal() {
   const [show, setShow] = useState(false);
-  const phone = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "911234567890";
+  const phone = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "+918973500029";
 
   useEffect(() => {
     const handleScroll = () => {

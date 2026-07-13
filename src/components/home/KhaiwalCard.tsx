@@ -36,7 +36,7 @@ export function KhaiwalCard(_props?: {
   games?: { name: string; time: string }[];
   heading?: string;
 }) {
-  const phone = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "911234567890";
+  const phone = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "+918973500029";
   const digits = phone.replace(/[^0-9]/g, "");
 
   // Fixed khaiwal game schedule shown in the chart (name + declared time, IST).
@@ -99,7 +99,7 @@ export function KhaiwalCard(_props?: {
 
         {/* Brand again */}
         <p className="text-[#a5370c] font-extrabold text-2xl md:text-4xl mt-6 md:mt-8 tracking-tight">
-          &#9819; GALI KING &#9819;
+          &#9819; SUNNY BHAI KHAIWAL &#9819;
         </p>
 
         {/* Red call-to-action */}

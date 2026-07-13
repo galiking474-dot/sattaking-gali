@@ -5,7 +5,7 @@ import { FiInfo, FiX } from "react-icons/fi";
 import { getWhatsAppLink } from "@/lib/utils";
 
 export function NotificationModal() {
-  const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "911234567890";
+  const whatsappNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "+918973500029";
   const [show, setShow] = useState(false);
 
   useEffect(() => {
