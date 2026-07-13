@@ -15,7 +15,7 @@ import {
 } from "react-icons/fi";
 import {
   getResultSattaData,
-  getMonthlyChart,
+  getSatta29Chart,
   getSharedHomepageData,
 } from "@/lib/api-helpers";
 import {
@@ -42,13 +42,13 @@ export default async function HomePage() {
   const [resultSatta, homepage, chart] = await Promise.all([
     getResultSattaData(),
     getSharedHomepageData(),
-    getMonthlyChart(month, year),
+    getSatta29Chart(month, year),
   ]);
 
   const games = resultSatta?.games ?? [];
   const chartData = chart
-    ? { month: chart.month, year: chart.year, results: chart.results }
-    : { month: "", year: "", results: [] };
+    ? { month: chart.month, year: chart.year, games: chart.games, rows: chart.rows }
+    : { month: "", year: "", games: [] as string[], rows: [] };
 
   // Don't repeat first-section games in LIVE/NEXT/REST — dedupe by normalized name.
   const firstSectionNames = new Set(
@@ -61,7 +61,7 @@ export default async function HomePage() {
   const nextResults = (homepage?.next ?? []).filter(notInFirst);
   const restResults = (homepage?.rest ?? []).filter(notInFirst);
 
-  // Scoreboard spotlight — latest declared result + the next upcoming game.
+  // Scoreboard spotlight — latest declared result + the next awaited game.
   const nowMin = getISTMinutesOfDay(now);
   const timed = games
     .map((g) => ({ g, min: parseClockTime(g.time) }))
@@ -70,9 +70,18 @@ export default async function HomePage() {
     timed
       .filter((x) => x.min <= nowMin && x.g.today)
       .sort((a, b) => b.min - a.min)[0]?.g ?? null;
+  // Next game = the earliest game (in daily schedule order) whose result has
+  // NOT been declared yet. It stays on that game until its result actually
+  // arrives — even if its declared time has already passed (result running
+  // late) — instead of jumping ahead on the clock. Early-morning games (e.g.
+  // Desawar ~05 AM) belong at the end of the cycle, so shift them past midnight.
+  const MORNING_CUTOFF = 12 * 60;
+  const scheduleMin = (min: number) =>
+    min < MORNING_CUTOFF ? min + 1440 : min;
   const upNext =
-    timed.filter((x) => x.min > nowMin).sort((a, b) => a.min - b.min)[0]?.g ??
-    null;
+    timed
+      .filter((x) => !x.g.today)
+      .sort((a, b) => scheduleMin(a.min) - scheduleMin(b.min))[0]?.g ?? null;
   const declaredCount = games.filter(
     (g) => isTodayResultDeclared(g.time) && g.today
   ).length;
@@ -145,11 +154,12 @@ export default async function HomePage() {
         <KeywordButtons monthYear={monthYear} />
 
         {/* Monthly Chart — shown above the LIVE/NEXT/REST sections */}
-        {chartData.results.length > 0 && (
+        {chartData.rows.length > 0 && (
           <MonthlyChartSection
             month={chartData.month}
             year={chartData.year}
-            rows={chartData.results}
+            games={chartData.games}
+            rows={chartData.rows}
           />
         )}
 
@@ -199,15 +209,19 @@ export default async function HomePage() {
 // ─── Featured market quick-links (hero) ───
 
 function FeaturedGameLinks() {
+  const year = new Date().getFullYear();
   return (
-    <div className="mt-4 md:mt-5 max-w-3xl mx-auto grid grid-cols-3 sm:grid-cols-6 gap-2 md:gap-3">
+    <div className="mt-4 md:mt-5 max-w-3xl mx-auto grid grid-cols-3 gap-2 md:gap-3">
       {FEATURED_GAMES.map((g) => (
         <Link
           key={g.slug}
-          href={`/game/${g.slug}`}
+          href={`/${g.slug}-result`}
           className="text-center bg-[#FDF3C9] hover:bg-[#FCE684] text-[#a5370c] font-extrabold text-[11px] sm:text-xs md:text-sm py-2 md:py-2.5 px-1 rounded-lg border border-[#e0850b] shadow-sm hover:shadow-md transition-all leading-tight"
         >
-          {g.name}
+          <span className="block">{g.name}</span>
+          <span className="block text-[9px] sm:text-[10px] md:text-xs font-bold text-[#c2600f]">
+            Results {year}
+          </span>
         </Link>
       ))}
     </div>
@@ -231,58 +245,70 @@ function Scoreboard({
     <div className="bg-[#FDF3C9]">
       <div className="max-w-[1400px] mx-auto px-2 sm:px-3 md:px-6 py-4 md:py-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
-          {/* Latest declared */}
-          <div className="relative rounded-2xl bg-gradient-to-br from-[#FFF7DA] to-[#FCE38A] p-4 md:p-5 border-2 border-[#e0850b] overflow-hidden shadow-sm">
-            <div className="absolute -right-6 -top-6 w-24 h-24 rounded-full bg-[#f5b301]/20" />
-            <div className="flex items-center gap-2 text-[#a5370c] text-[11px] md:text-xs font-bold uppercase tracking-widest">
-              <FiAward /> Latest Result
+          {/* Latest declared — dramatic dark reveal */}
+          <div className="relative rounded-2xl bg-gradient-to-br from-[#2a1400] via-[#5a2408] to-[#a5370c] p-5 md:p-6 border-2 border-[#FFD93B] overflow-hidden shadow-xl shadow-[#a5370c]/30">
+            {/* glow blobs */}
+            <div className="absolute -right-10 -top-10 w-40 h-40 rounded-full bg-[#FFD93B]/20 blur-2xl" />
+            <div className="absolute -left-8 -bottom-8 w-28 h-28 rounded-full bg-[#dc2626]/20 blur-2xl" />
+
+            <div className="relative flex items-center gap-2 text-[#FFD93B] text-[11px] md:text-xs font-extrabold uppercase tracking-[0.2em]">
+              <FiAward className="w-4 h-4" /> Latest Result
+              <span className="ml-auto inline-flex items-center gap-1.5 bg-[#16a34a] text-white text-[9px] md:text-[10px] font-extrabold px-2 py-0.5 rounded-full">
+                <span className="w-1.5 h-1.5 rounded-full bg-white animate-live-pulse" />
+                DECLARED
+              </span>
             </div>
+
             {latest ? (
-              <div className="mt-2 flex items-end justify-between gap-3">
+              <div className="relative mt-3 flex items-center justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-[#3a1d00] font-extrabold text-lg md:text-2xl uppercase truncate">
+                  <p className="text-white font-extrabold text-2xl md:text-4xl uppercase truncate drop-shadow-[0_2px_6px_rgba(0,0,0,0.5)]">
                     {latest.name}
                   </p>
-                  <p className="text-[#8a6d2f] text-[11px] md:text-xs font-medium">
+                  <p className="text-[#FCE38A] text-xs md:text-sm font-semibold mt-1">
                     {latest.time}
                   </p>
                 </div>
-                <div className="shrink-0 bg-white text-[#dc2626] font-extrabold font-mono text-3xl md:text-5xl rounded-xl px-4 py-1.5 shadow-md border border-[#f0d98a]">
+                <div className="shrink-0 bg-white text-[#dc2626] font-extrabold font-mono text-5xl md:text-7xl rounded-2xl px-5 md:px-7 py-1.5 md:py-2 animate-result-glow leading-none">
                   {latest.today}
                 </div>
               </div>
             ) : (
-              <p className="mt-3 text-[#8a6d2f] font-semibold">
+              <p className="relative mt-4 text-[#FCE38A] font-semibold text-base md:text-lg">
                 Waiting for today&apos;s first result…
               </p>
             )}
           </div>
 
-          {/* Next upcoming */}
-          <div className="relative rounded-2xl bg-white/70 p-4 md:p-5 border-2 border-[#f0d98a] overflow-hidden shadow-sm">
-            <div className="flex items-center gap-2 text-[#a5370c] text-[11px] md:text-xs font-bold uppercase tracking-widest">
-              <FiClock /> Next Game
+          {/* Next upcoming — dark, with pulsing WAIT badge */}
+          <div className="relative rounded-2xl bg-gradient-to-br from-[#241a06] to-[#6b4c12] p-5 md:p-6 border-2 border-[#e0a92b] overflow-hidden shadow-xl shadow-black/20">
+            <div className="absolute -right-10 -top-10 w-36 h-36 rounded-full bg-[#f5b301]/15 blur-2xl" />
+
+            <div className="relative flex items-center gap-2 text-[#FFD93B] text-[11px] md:text-xs font-extrabold uppercase tracking-[0.2em]">
+              <FiClock className="w-4 h-4" /> Next Game
             </div>
+
             {upNext ? (
-              <div className="mt-2 flex items-center justify-between gap-3">
+              <div className="relative mt-3 flex items-center justify-between gap-3">
                 <div className="min-w-0">
-                  <p className="text-[#3a1d00] font-extrabold text-lg md:text-2xl uppercase truncate">
+                  <p className="text-white font-extrabold text-2xl md:text-4xl uppercase truncate drop-shadow-[0_2px_6px_rgba(0,0,0,0.5)]">
                     {upNext.name}
                   </p>
-                  <p className="text-[#8a6d2f] text-[11px] md:text-xs font-medium">
+                  <p className="text-[#FCE38A] text-xs md:text-sm font-semibold mt-1">
                     Result expected at {upNext.time}
                   </p>
                 </div>
                 <div
                   title="Result awaited"
                   aria-label="Result awaited"
-                  className="shrink-0 inline-flex items-center justify-center w-11 h-11 bg-white text-[#d97706] rounded-full shadow border border-[#f0d98a]"
+                  className="shrink-0 inline-flex flex-col items-center justify-center gap-1 bg-[#dc2626] text-white rounded-full w-16 h-16 md:w-20 md:h-20 shadow-lg shadow-[#dc2626]/40 border-2 border-white/70 animate-wait-pulse"
                 >
-                  <FiClock className="w-6 h-6 animate-watch-tick" />
+                  <FiClock className="w-5 h-5 md:w-6 md:h-6" />
+                  <span className="text-[10px] md:text-xs font-extrabold tracking-widest">WAIT</span>
                 </div>
               </div>
             ) : (
-              <p className="mt-3 text-[#8a6d2f] font-semibold">
+              <p className="relative mt-4 text-[#FCE38A] font-semibold text-base md:text-lg">
                 All of today&apos;s games are declared.
               </p>
             )}
@@ -651,7 +677,7 @@ function KeywordButtons({ monthYear }: { monthYear: string }) {
     <section className="space-y-3">
       {/* Top full-width bar */}
       <Link
-        href="/"
+        href="/charts"
         className="block w-full text-center bg-gradient-to-r from-[#FFD93B] to-[#F5A623] text-[#a5370c] font-bold text-sm md:text-lg py-3 md:py-4 rounded-xl shadow-md border-2 border-[#e0850b] hover:brightness-105 transition-all"
       >
         Click here to view the latest chart for all games for {monthYear}

@@ -1,83 +1,44 @@
-"use client";
+import type { Satta29Row } from "@/lib/types";
 
-import { useState } from "react";
-import { format } from "date-fns";
-import type { ChartRow } from "@/lib/types";
+function dayNum(iso: string): string {
+  const parts = iso.split("-");
+  return parts[2] || iso;
+}
 
 export function MonthlyChartSection({
-  month: initialMonth,
-  year: initialYear,
-  rows: initialRows,
+  month,
+  year,
+  games,
+  rows,
 }: {
   month: string;
   year: string;
-  rows: ChartRow[];
+  games: string[];
+  rows: Satta29Row[];
 }) {
-  const [currentDate, setCurrentDate] = useState(
-    new Date(Number(initialYear), new Date(`${initialMonth} 1, ${initialYear}`).getMonth())
-  );
-  const [rows, setRows] = useState(initialRows);
-  const [chartLoading, setChartLoading] = useState(false);
-
-  const displayMonth = format(currentDate, "MMMM");
-  const displayYear = format(currentDate, "yyyy");
-
-  const prevDate = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1);
-  const nextDate = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1);
-
-  const fetchMonth = async (date: Date) => {
-    setChartLoading(true);
-    const m = format(date, "MMMM").toLowerCase();
-    const y = format(date, "yyyy");
-    try {
-      const res = await fetch(`/api/monthly-chart?month=${m}&year=${y}`);
-      const data = await res.json();
-      if (data.success) {
-        setRows(data.results || []);
-        setCurrentDate(date);
-      }
-    } catch (err) {
-      console.error("Chart fetch error:", err);
-    } finally {
-      setChartLoading(false);
-    }
-  };
-
-  const cols: { key: keyof ChartRow; label: string }[] = [
-    { key: "dlbz", label: "DLBZ" },
-    { key: "srgn", label: "SRGN" },
-    { key: "frbd", label: "FRBD" },
-    { key: "gzbd", label: "GZBD" },
-    { key: "gali", label: "GALI" },
-    { key: "dswr", label: "DSWR" },
-  ];
+  // Split the games into groups of 3 so each renders as its own compact table
+  // (3 games + Date) that fits a phone screen without horizontal scrolling.
+  const groups: string[][] = [];
+  for (let i = 0; i < games.length; i += 3) groups.push(games.slice(i, i + 3));
 
   return (
     <div className="">
       <div className="bg-white rounded-xl border-2 border-[#e0850b] overflow-hidden shadow-lg">
         <div className="bg-gradient-to-r from-[#FFD93B] to-[#F5A623] text-[#a5370c] text-center py-2.5 md:py-3 text-[14px] md:text-sm font-bold px-2 md:px-3 leading-relaxed border-b-2 border-[#e0850b]">
-          Satta King Chart {displayMonth} {displayYear} <span className="hidden sm:inline">&mdash; Faridabad, Ghaziabad, Gali, Shri Ganesh, Delhi Bazar &amp; Desawar</span>
+          Satta King Chart {month} {year} <span className="hidden sm:inline">&mdash; Faridabad Day, Delhi Bazar, Shree Ganesh, Faridabad, Old Alwar, Ghaziabad, Dehradun City, Gali &amp; Desawar</span>
         </div>
 
-        {chartLoading ? (
-          <div className="p-4 space-y-2">
-            {Array.from({ length: 10 }).map((_, i) => (
-              <div key={i} className="flex gap-2">
-                <div className="skeleton h-5 w-10" />
-                {cols.map((c) => (
-                  <div key={c.key} className="skeleton h-5 flex-1" />
-                ))}
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="overflow-hidden">
-            <table className="w-full table-fixed text-[18px] sm:text-xs md:text-base border-collapse">
+        <div className="p-2.5 md:p-4 space-y-4 md:space-y-5">
+          {groups.map((groupGames, gi) => (
+            <table
+              key={gi}
+              className="w-full table-fixed text-[15px] sm:text-xs md:text-base border-collapse"
+            >
               <thead>
-                <tr className="bg-[#a5370c] text-[#FFE071] text-[14px] md:text-sm uppercase tracking-wider">
-                  <th className="py-2.5 px-0.5 md:px-3 text-[#FFE071] font-bold border border-[#c2600f]">DATE</th>
-                  {cols.map((c) => (
-                    <th key={c.key} className="py-2.5 px-0.5 md:px-3 font-bold border border-[#c2600f]">{c.label}</th>
+                <tr className="bg-[#a5370c] text-[#FFE071] text-[13px] md:text-sm uppercase tracking-wider">
+                  <th className="py-2.5 px-1.5 md:px-3 text-[#FFE071] font-bold border border-[#c2600f] w-[19%]">DATE</th>
+                  {groupGames.map((g) => (
+                    <th key={g} className="py-2.5 px-1 md:px-3 font-bold border border-[#c2600f] leading-tight">{g}</th>
                   ))}
                 </tr>
               </thead>
@@ -89,33 +50,16 @@ export function MonthlyChartSection({
                       i % 2 === 0 ? "bg-white" : "bg-[#fffbe9]"
                     }`}
                   >
-                    <td className="py-1.5 px-0.5 md:px-3 text-[#dc2626] font-extrabold border border-[#f0e2a6]">{row.date}</td>
-                    {cols.map((c) => (
-                      <td key={c.key} className="py-1.5 px-0.5 md:px-3 font-mono font-bold text-[#1e293b] border border-[#f0e2a6]">{row[c.key]}</td>
+                    <td className="py-1.5 px-1.5 md:px-3 text-[#dc2626] font-extrabold border border-[#f0e2a6]">{dayNum(row.date)}</td>
+                    {groupGames.map((g) => (
+                      <td key={g} className="py-1.5 px-1.5 md:px-3 font-mono font-bold text-[#1e293b] border border-[#f0e2a6]">{row.values[g] ? row.values[g] : "XX"}</td>
                     ))}
                   </tr>
                 ))}
               </tbody>
             </table>
-          </div>
-        )}
-      </div>
-
-      <div className="grid grid-cols-2 gap-3 mt-3">
-        <button
-          onClick={() => fetchMonth(prevDate)}
-          disabled={chartLoading}
-          className="bg-gradient-to-b from-[#FFD93B] to-[#d4a017] text-[#3a1d00] text-center py-2.5 md:py-3 rounded-xl text-xs md:text-sm font-extrabold border-2 border-[#e0850b] hover:brightness-105 transition-all disabled:opacity-50"
-        >
-          &larr; {format(prevDate, "MMM yyyy")}
-        </button>
-        <button
-          onClick={() => fetchMonth(nextDate)}
-          disabled={chartLoading}
-          className="bg-gradient-to-b from-[#FFD93B] to-[#d4a017] text-[#3a1d00] text-center py-2.5 md:py-3 rounded-xl text-xs md:text-sm font-extrabold border-2 border-[#e0850b] hover:brightness-105 transition-all disabled:opacity-50"
-        >
-          {format(nextDate, "MMM yyyy")} &rarr;
-        </button>
+          ))}
+        </div>
       </div>
     </div>
   );

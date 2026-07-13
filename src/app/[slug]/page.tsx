@@ -3,12 +3,14 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { format } from "date-fns";
 import { FiClock, FiArrowRight, FiAward, FiBarChart2 } from "react-icons/fi";
-import { getMonthlyChart } from "@/lib/api-helpers";
+import { getSatta29Chart } from "@/lib/api-helpers";
 import { getFeaturedGame, FEATURED_GAMES } from "@/lib/featured-games";
 import { KhaiwalCard } from "@/components/home/KhaiwalCard";
 
 // Revalidate at the edge every 30s, same cadence as the homepage.
 export const revalidate = 30;
+
+const RESULT_SUFFIX = "-result";
 
 const MONTHS_FULL = [
   "January", "February", "March", "April", "May", "June",
@@ -19,7 +21,6 @@ const MONTHS_ABBR = [
   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
 ];
 
-// Keyword pills — clicking any of these navigates back to the homepage.
 const SEO_KEYWORDS = [
   "Satta King",
   "Satta Result",
@@ -38,13 +39,21 @@ function cleanVal(v?: string): string {
   return t;
 }
 
+// The base game slug for a "/<slug>-result" URL, or null if the URL isn't a
+// result page at all.
+function baseSlug(slug: string): string | null {
+  if (!slug.endsWith(RESULT_SUFFIX)) return null;
+  return slug.slice(0, -RESULT_SUFFIX.length);
+}
+
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const game = getFeaturedGame(slug);
+  const base = baseSlug(slug);
+  const game = base ? getFeaturedGame(base) : undefined;
   if (!game) return { title: "Satta King Result" };
 
   const title = `${game.name} Satta King Result Today | Live ${game.name} Chart & Record`;
@@ -52,18 +61,19 @@ export async function generateMetadata({
   return {
     title: { absolute: title },
     description,
-    alternates: { canonical: `/game/${slug}` },
+    alternates: { canonical: `/${slug}` },
     openGraph: { title, description, type: "website" },
   };
 }
 
-export default async function GamePage({
+export default async function GameResultPage({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const game = getFeaturedGame(slug);
+  const base = baseSlug(slug);
+  const game = base ? getFeaturedGame(base) : undefined;
   if (!game) notFound();
 
   const now = new Date();
@@ -71,20 +81,21 @@ export default async function GamePage({
   const curMonth = now.getMonth(); // 0-based
   const monthsToShow = MONTHS_FULL.slice(0, curMonth + 1);
 
-  // Pull the combined monthly chart for every month of the current year up to
-  // now. Each ChartRow holds all six market columns, so we read this game's
-  // column to build both the result card and the yearly grid.
+  // Pull the satta29 combined monthly chart for every month of the current year
+  // up to now and read this game's column (by its exact satta29 header name).
   const charts = await Promise.all(
-    monthsToShow.map((m) => getMonthlyChart(m.toLowerCase(), String(year)))
+    monthsToShow.map((m) => getSatta29Chart(m.toLowerCase(), String(year)))
   );
 
   // grid[monthIndex][date] = value ("" when not declared)
   const grid: Record<number, Record<number, string>> = {};
   charts.forEach((chart, mIdx) => {
     grid[mIdx] = {};
-    (chart?.results ?? []).forEach((row) => {
-      const d = parseInt(row.date, 10);
-      if (!Number.isNaN(d)) grid[mIdx][d] = cleanVal(row[game.chartKey]);
+    (chart?.rows ?? []).forEach((row) => {
+      const day = parseInt(row.date.split("-")[2] || "", 10);
+      if (!Number.isNaN(day)) {
+        grid[mIdx][day] = cleanVal(row.values[game.satta29Name]);
+      }
     });
   });
 
@@ -113,9 +124,9 @@ export default async function GamePage({
         {FEATURED_GAMES.map((g) => (
           <Link
             key={g.slug}
-            href={`/game/${g.slug}`}
+            href={`/${g.slug}-result`}
             className={`text-[11px] md:text-sm font-bold px-3 py-1.5 rounded-full border transition-all ${
-              g.slug === slug
+              g.slug === game.slug
                 ? "bg-[#a5370c] text-[#FFE071] border-[#a5370c]"
                 : "bg-white text-[#a5370c] border-[#e0850b] hover:bg-[#fff7e0]"
             }`}
@@ -255,20 +266,17 @@ export default async function GamePage({
           </div>
           <div className="text-center py-2 border-t border-[#f0e2a6]">
             <Link
-              href={`/chart/${slug}`}
+              href="/charts"
               className="text-[#a5370c] hover:text-[#d97706] hover:underline text-xs md:text-sm font-bold"
             >
-              View full {game.name} monthly record &rarr;
+              View full monthly record chart &rarr;
             </Link>
           </div>
         </div>
       </section>
 
       {/* ── SECTION 3: Khaiwal chart / contact ── */}
-      <KhaiwalCard
-        games={FEATURED_GAMES.map((g) => ({ name: g.name, time: g.time }))}
-        heading="Khaiwal Chart & Contact"
-      />
+      <KhaiwalCard />
 
       {/* ── SECTION 4: SEO content + keywords ── */}
       <section className="bg-white rounded-xl border border-[#f0e2a6] p-4 md:p-8 space-y-4 md:space-y-5 text-xs md:text-sm text-gray-600 leading-relaxed shadow-sm">

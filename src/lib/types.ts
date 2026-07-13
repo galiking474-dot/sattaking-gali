@@ -76,3 +76,18 @@ export interface SK24ChartsData {
   tables: SK24ChartTable[];
   scrapedAt: number;
 }
+
+// Combined monthly chart scraped from satta29.com — one row per date with a
+// value per game. `games` is the ordered list of column headers.
+export interface Satta29Row {
+  date: string; // ISO "YYYY-MM-DD"
+  values: Record<string, string>; // game name → result ("" when not declared)
+}
+
+export interface Satta29ChartData {
+  month: string; // full month name, e.g. "July"
+  year: string;
+  games: string[];
+  rows: Satta29Row[];
+  scrapedAt: number;
+}

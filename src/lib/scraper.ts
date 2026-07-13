@@ -1,6 +1,6 @@
 import axios from "axios";
 import * as cheerio from "cheerio";
-import type { GameResult, ChartRow, SK24Game, SK24Spotlight } from "./types";
+import type { GameResult, ChartRow, SK24Game, SK24Spotlight, Satta29Row } from "./types";
 
 const HEADERS = { "User-Agent": "Mozilla/5.0" };
 const TIMEOUT = 15_000;
@@ -435,4 +435,130 @@ export async function scrapeSK24Games(): Promise<{ games: SK24Game[]; spotlight:
   });
 
   return { games, spotlight: { upcomingName, declaredName, declaredResult } };
+}
+
+// ─── Satta29 Homepage Live Result Scraper ───
+// The homepage renders games as <th> cells inside two `.column` tables. Each
+// cell holds "<strong>NAME<br>TIME</strong>" and "<p>YESTERDAY <img> TODAY</p>".
+// We read both columns and interleave them so the order matches the site's
+// two-column visual layout (col1[0], col2[0], col1[1], col2[1], …).
+
+// A missing/pending result is shown as "XX" (or empty) on the source; store it
+// as "" so the UI renders a "result awaited" state instead of a literal "XX".
+function normalizeResult(value: string): string {
+  const v = value.trim().toUpperCase();
+  if (!v || v === "XX" || v === "-" || v === "--") return "";
+  return value.trim();
+}
+
+function splitOnBr(html: string): string[] {
+  return html
+    .split(/<br\s*\/?>/i)
+    .map((s) => s.replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim())
+    .filter(Boolean);
+}
+
+export async function scrapeSatta29Homepage(): Promise<GameResult[]> {
+  const { data: html } = await axios.get("https://satta29.com/", {
+    headers: HEADERS,
+    timeout: TIMEOUT,
+  });
+  const $ = cheerio.load(html);
+
+  const columns: GameResult[][] = [];
+
+  $("div.column table").each((_c, table) => {
+    const col: GameResult[] = [];
+    $(table)
+      .find("th")
+      .each((_i, th) => {
+        const strongHtml = $(th).find("strong").html() || "";
+        const [name = "", time = ""] = splitOnBr(strongHtml);
+        if (!name) return;
+
+        const pHtml = $(th).find("p").html() || "";
+        const nums = pHtml
+          .split(/<img[^>]*>/i)
+          .map((s) => s.replace(/<[^>]+>/g, "").trim())
+          .filter((s) => s.length > 0);
+
+        col.push({
+          name,
+          time,
+          yesterday: normalizeResult(nums[0] || ""),
+          today: normalizeResult(nums[1] || ""),
+        });
+      });
+    if (col.length > 0) columns.push(col);
+  });
+
+  // Interleave the columns to reproduce the on-page top-to-bottom order.
+  const games: GameResult[] = [];
+  const maxLen = Math.max(0, ...columns.map((c) => c.length));
+  for (let i = 0; i < maxLen; i++) {
+    for (const col of columns) {
+      if (col[i]) games.push(col[i]);
+    }
+  }
+
+  return games;
+}
+
+// ─── Satta29 Combined Monthly Chart Scraper ───
+// satta29.com/chart renders the month as 3 side-by-side tables (different games
+// per table) that share the same date rows. We merge them into one row per date
+// keyed by game name. A specific month/year is served at
+// /chart/result-chart-<Month>-<Year> (full month name, e.g. "July-2026").
+
+export async function scrapeSatta29Chart(
+  month: string,
+  year: string
+): Promise<{ games: string[]; rows: Satta29Row[] }> {
+  const formattedMonth = month.charAt(0).toUpperCase() + month.slice(1).toLowerCase();
+  const url = `https://satta29.com/chart/result-chart-${formattedMonth}-${year}`;
+
+  const { data: html } = await axios.get(url, { headers: HEADERS, timeout: TIMEOUT });
+  const $ = cheerio.load(html);
+
+  const games: string[] = [];
+  const merged = new Map<string, Record<string, string>>();
+
+  $("table.table-extra").each((_t, table) => {
+    let header: string[] | null = null;
+    $(table)
+      .find("tr")
+      .each((_i, tr) => {
+        const cells = $(tr)
+          .find("td")
+          .map((_j, td) => $(td).text().trim())
+          .get();
+        // The title row uses <th> only — no <td> cells, so skip it.
+        if (cells.length === 0) return;
+
+        // Header row: first cell is "Date", the rest are game names.
+        if (cells[0].toLowerCase() === "date") {
+          header = cells.slice(1);
+          header.forEach((g) => {
+            if (g && !games.includes(g)) games.push(g);
+          });
+          return;
+        }
+
+        if (!header) return;
+        const date = cells[0];
+        if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) return;
+
+        const row = merged.get(date) ?? {};
+        header.forEach((g, idx) => {
+          row[g] = cells[idx + 1] ?? "";
+        });
+        merged.set(date, row);
+      });
+  });
+
+  const rows: Satta29Row[] = Array.from(merged.entries())
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .map(([date, values]) => ({ date, values }));
+
+  return { games, rows };
 }

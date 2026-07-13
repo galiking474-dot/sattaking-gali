@@ -1,5 +1,5 @@
 import { after } from "next/server";
-import { scrapeResultSatta, scrapeMonthlyChart, scrapeHomepage, scrapeSK24Games } from "./scraper";
+import { scrapeMonthlyChart, scrapeHomepage, scrapeSK24Games, scrapeSatta29Chart, scrapeSatta29Homepage } from "./scraper";
 import {
   getResultSattaFromFirestore,
   saveResultSattaToFirestore,
@@ -10,7 +10,7 @@ import {
   getSK24GamesFromFirestore,
   saveSK24GamesToFirestore,
 } from "./firebase-cache";
-import type { ResultSattaData, MonthlyChartData, HomepageData, SK24GamesData } from "./types";
+import type { ResultSattaData, MonthlyChartData, HomepageData, SK24GamesData, Satta29ChartData } from "./types";
 
 // ─── Simple In-Memory Cache ───
 // Each serverless instance gets its own cache
@@ -79,7 +79,8 @@ export async function getResultSattaData(): Promise<ResultSattaData | null> {
 
 async function refreshResultSatta(): Promise<ResultSattaData | null> {
   try {
-    const games = await scrapeResultSatta();
+    // First-section live board is sourced from satta29.com's homepage.
+    const games = await scrapeSatta29Homepage();
     const data: ResultSattaData = { games, scrapedAt: Date.now() };
     memSet("resultsatta", data, 30);
     await saveResultSattaToFirestore(data);
@@ -217,6 +218,38 @@ export async function getMonthlyChart(
       memSet(cacheKey, firebaseData, 60);
       return firebaseData;
     }
+    return null;
+  }
+}
+
+// ─── Get Satta29 Combined Monthly Chart (on-demand) ───
+// Flow: Memory cache → Scrape. No Firebase layer — the memory cache + edge cache
+// are enough for a chart that changes at most a few times a day.
+
+export async function getSatta29Chart(
+  monthName: string,
+  year: string
+): Promise<Satta29ChartData | null> {
+  const month = monthName.toLowerCase();
+  const formattedMonth = month.charAt(0).toUpperCase() + month.slice(1);
+  const cacheKey = `satta29:${month}:${year}`;
+
+  const cached = memGet<Satta29ChartData>(cacheKey);
+  if (cached) return cached;
+
+  try {
+    const { games, rows } = await scrapeSatta29Chart(formattedMonth, year);
+    const data: Satta29ChartData = {
+      month: formattedMonth,
+      year,
+      games,
+      rows,
+      scrapedAt: Date.now(),
+    };
+    // Cache longer for past months (immutable) than the current live month.
+    memSet(cacheKey, data, 300);
+    return data;
+  } catch {
     return null;
   }
 }

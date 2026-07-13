@@ -168,10 +168,10 @@ import { adminDb } from "./firebase-admin";
 
 const COLLECTION = "scraped_cache";
 
-// ─── ResultSatta first-section data ───
+// ─── First-section live-board data (scraped from satta29.com) ───
 // Stored in its OWN document so it never clobbers the other site's `homepage`
 // doc that shares this Firebase project.
-const RESULTSATTA_DOC = "resultsatta_homepage";
+const RESULTSATTA_DOC = "satta29_homepage";
 
 export async function saveResultSattaToFirestore(
   data: ResultSattaData

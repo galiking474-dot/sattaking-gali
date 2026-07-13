@@ -2,8 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
-import { FiMenu, FiX, FiHome, FiMessageCircle, FiBarChart2 } from "react-icons/fi";
+import { FiHome, FiMessageCircle, FiBarChart2 } from "react-icons/fi";
 import { FaCrown } from "react-icons/fa";
 import { GiLion } from "react-icons/gi";
 
@@ -24,7 +23,6 @@ function LogoMark() {
 }
 
 export function Header() {
-  const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = usePathname();
 
   function isActive(href: string) {
@@ -65,40 +63,29 @@ export function Header() {
             })}
           </nav>
 
-          {/* Mobile toggle */}
-          <button
-            className="md:hidden p-2 rounded-lg hover:bg-[#FDF3C9] transition-colors text-[#5a3a08]"
-            onClick={() => setMobileOpen(!mobileOpen)}
-            aria-label={mobileOpen ? "Close menu" : "Open menu"}
-          >
-            {mobileOpen ? <FiX size={22} /> : <FiMenu size={22} />}
-          </button>
         </div>
 
-        {/* Mobile nav */}
-        {mobileOpen && (
-          <nav className="md:hidden pb-3 pt-2 flex flex-col gap-1 border-t border-[#e0a92b]">
-            {NAV_LINKS.map((link) => {
-              const Icon = link.icon;
-              const active = isActive(link.href);
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`flex items-center gap-2.5 px-4 py-2.5 rounded-lg text-sm font-bold transition-all ${
-                    active
-                      ? "bg-[#a5370c] text-[#FFE071]"
-                      : "text-[#5a3a08] hover:bg-[#FDF3C9] hover:text-[#3a1d00]"
-                  }`}
-                  onClick={() => setMobileOpen(false)}
-                >
-                  <Icon size={16} />
-                  {link.label}
-                </Link>
-              );
-            })}
-          </nav>
-        )}
+        {/* Mobile nav — always-visible buttons below the brand */}
+        <nav className="md:hidden grid grid-cols-3 gap-2 pb-3">
+          {NAV_LINKS.map((link) => {
+            const Icon = link.icon;
+            const active = isActive(link.href);
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`flex items-center justify-center gap-1.5 px-2 py-2.5 rounded-lg text-sm font-bold transition-all border ${
+                  active
+                    ? "bg-[#a5370c] text-[#FFE071] border-[#a5370c] shadow-md"
+                    : "text-[#5a3a08] bg-[#FDF3C9] border-[#f0e2a6] hover:bg-[#FCE99A] hover:text-[#3a1d00]"
+                }`}
+              >
+                <Icon size={16} />
+                {link.label}
+              </Link>
+            );
+          })}
+        </nav>
       </div>
 
       {/* Marquee */}

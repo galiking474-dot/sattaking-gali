@@ -29,7 +29,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...staticRoutes,
     // Featured market landing pages (result + yearly chart + Khaiwal + SEO).
     ...FEATURED_GAMES.map((g) => ({
-      url: `${BASE_URL}/game/${g.slug}`,
+      url: `${BASE_URL}/${g.slug}-result`,
       lastModified: new Date(),
       changeFrequency: "daily" as const,
       priority: 0.9,

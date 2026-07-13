@@ -30,26 +30,27 @@ function toHindiName(name: string): string {
 
 // Khaiwal contact / game-schedule card. Shared by the homepage and each
 // per-game page. Pass the schedule to display (name + time).
-export function KhaiwalCard({
-  games,
-}: {
-  games: { name: string; time: string }[];
-  // Accepted for backwards-compat with callers; the heading block was removed.
+export function KhaiwalCard(_props?: {
+  // Props accepted for backwards-compat with callers; the khaiwal chart now
+  // shows a fixed game schedule (below) rather than the scraped/featured games.
+  games?: { name: string; time: string }[];
   heading?: string;
 }) {
   const phone = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || "911234567890";
   const digits = phone.replace(/[^0-9]/g, "");
 
-  const fallback = [
-    { name: "शिवधाम", time: "01:20 PM" },
-    { name: "दिल्ली बाजार", time: "03:00 PM" },
-    { name: "श्री गणेश", time: "04:20 PM" },
-    { name: "फरीदाबाद", time: "06:00 PM" },
-    { name: "गाज़ियाबाद", time: "09:20 PM" },
-    { name: "गली", time: "11:20 PM" },
-    { name: "दिसावर", time: "03:20 AM" },
+  // Fixed khaiwal game schedule shown in the chart (name + declared time, IST).
+  const schedule = [
+    { name: "फरीदाबाद डे", time: "02:00 PM" },
+    { name: "दिल्ली बाजार", time: "02:50 PM" },
+    { name: "श्री गणेश", time: "04:25 PM" },
+    { name: "फरीदाबाद", time: "05:50 PM" },
+    { name: "ओल्ड अलवर", time: "07:00 PM" },
+    { name: "गाजियाबाद", time: "09:40 PM" },
+    { name: "देहरादून सिटी", time: "10:10 PM" },
+    { name: "गली", time: "11:40 PM" },
+    { name: "दिसावर", time: "02:30 AM" },
   ];
-  const schedule = games.length > 0 ? games : fallback;
 
   return (
     <section>
