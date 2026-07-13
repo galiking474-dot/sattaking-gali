@@ -60,7 +60,7 @@ export function KhaiwalCard(_props?: {
           --सीधे सट्टा कंपनी का No 1 खाईवाल--
         </p>
         <p className="text-[#a5370c] font-extrabold text-2xl md:text-4xl mt-2 md:mt-3 tracking-tight">
-          &#9819; GALI KING &#9819;
+          &#9819; SUNNY BHAI KHAIWAL &#9819;
         </p>
 
         {/* Game Schedule List */}
