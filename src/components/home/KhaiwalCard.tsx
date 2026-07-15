@@ -62,7 +62,9 @@ export function KhaiwalCard(_props?: {
         <p className="text-[#a5370c] font-extrabold text-2xl md:text-4xl mt-2 md:mt-3 tracking-tight">
           &#9819; SUNNY BHAI KHAIWAL &#9819;
         </p>
-
+        <p className="text-[#000] font-extrabold text-base md:text-xl mt-4">
+          {phone}
+        </p>
         {/* Game Schedule List */}
         <div className="max-w-md mx-auto mt-5 md:mt-7 text-left">
           {schedule.map((game, i) => (
@@ -101,7 +103,9 @@ export function KhaiwalCard(_props?: {
         <p className="text-[#a5370c] font-extrabold text-2xl md:text-4xl mt-6 md:mt-8 tracking-tight">
           &#9819; SUNNY BHAI KHAIWAL &#9819;
         </p>
-
+        <p className="text-[#000] font-extrabold text-base md:text-xl mt-4">
+          {phone}
+        </p>
         {/* Red call-to-action */}
         <p className="text-[#dc2626] font-extrabold text-base md:text-xl mt-4">
           Game play करने के लिये नीचे लिंक पर क्लिक करे
