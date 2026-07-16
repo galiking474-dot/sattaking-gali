@@ -468,8 +468,30 @@ function GameRow({
 // ─── First Section: ResultSatta Results Board ───
 
 function ResultBoard({ games }: { games: GameResult[] }) {
-  const today = format(new Date(), "MMMM d, yyyy");
+  // const today = format(new Date(), "MMMM d, yyyy");
+  const now = new Date();
 
+  // Raat 12 baje se subah 5 baje tak
+  const shouldShiftResults = now.getHours() < 5;
+
+  const displayGames = games.map((g) => {
+    if (!shouldShiftResults) return g;
+
+    return {
+      ...g,
+      yesterday: g.today || g.yesterday,
+      today: "",
+    };
+  });
+
+  const today = format(now, "MMMM d, yyyy");
+  // console.log(
+  //   games.map(g => ({
+  //     name: g.name,
+  //     yesterday: g.yesterday,
+  //     today: g.today,
+  //   }))
+  // );
   return (
     <section>
       <div className="bg-white rounded-2xl overflow-hidden shadow-lg">
@@ -490,13 +512,13 @@ function ResultBoard({ games }: { games: GameResult[] }) {
         </div>
 
         {/* Boxes grid */}
-        {games.length === 0 ? (
+        {displayGames.length === 0 ? (
           <div className="py-8 text-center text-[#b09a5a] font-medium bg-[#FFFDF3]">
             Loading live results&hellip;
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-2.5 md:gap-4 p-3 md:p-4 bg-[#FFFDF3]">
-            {games.map((game, i) => {
+            {displayGames.map((game, i) => {
               // The scraped `today` value lingers from the previous day after
               // midnight. Only trust it once this game's declared time has
               // actually passed in IST — otherwise it's not out yet.
