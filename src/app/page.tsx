@@ -481,7 +481,7 @@ function ResultBoard({ games }: { games: GameResult[] }) {
   const now = new Date();
   
   // Raat 12 baje se subah 5 baje tak
-  const shouldShiftResults = now.getHours() < 5;
+  const shouldShiftResults = istHour < 5;
   console.log("Shift Results:", shouldShiftResults);
   
   const displayGames = games.map((g) => {
