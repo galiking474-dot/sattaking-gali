@@ -469,11 +469,21 @@ function GameRow({
 
 function ResultBoard({ games }: { games: GameResult[] }) {
   // const today = format(new Date(), "MMMM d, yyyy");
+  const istHour = Number(
+    new Intl.DateTimeFormat("en-US", {
+      timeZone: "Asia/Kolkata",
+      hour: "numeric",
+      hour12: false,
+    }).format(new Date())
+  );
+  
+  console.log("IST Hour:", istHour);
   const now = new Date();
-
+  
   // Raat 12 baje se subah 5 baje tak
   const shouldShiftResults = now.getHours() < 5;
-
+  console.log("Shift Results:", shouldShiftResults);
+  
   const displayGames = games.map((g) => {
     if (!shouldShiftResults) return g;
 
