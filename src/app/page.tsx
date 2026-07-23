@@ -25,6 +25,7 @@ import {
 } from "@/lib/utils";
 import { FEATURED_GAMES } from "@/lib/featured-games";
 import type { GameResult } from "@/lib/types";
+import { log } from "console";
 
 // Server-render the page and revalidate at most once every 30s. The results board
 // + charts are cached at the edge, so a traffic spike triggers at most one
@@ -145,7 +146,9 @@ export default async function HomePage() {
         <AdSlot placement="homepage_top" />
 
         {/* FIRST SECTION — Results board scraped from resultsatta.com */}
-        <ResultBoard games={games} />
+        <ResultBoard games={games} liveResults={liveResults}
+  nextResults={nextResults}
+  restResults={restResults} />
 
         {/* Khaiwal / Game Schedule & Contact — directly under the first section */}
         <KhaiwalCard games={schedule} />
@@ -467,8 +470,57 @@ function GameRow({
 
 // ─── First Section: ResultSatta Results Board ───
 
-function ResultBoard({ games }: { games: GameResult[] }) {
-  // const today = format(new Date(), "MMMM d, yyyy");
+function ResultBoard({ games,liveResults,
+  nextResults,
+  restResults, }: { games: GameResult[],liveResults: GameResult[];
+  nextResults: GameResult[];
+  restResults: GameResult[]; }) {
+
+    const homepageGames = [
+      ...liveResults,
+      ...nextResults,
+      ...restResults,
+    ];
+    // console.log("restResults",restResults);
+    
+    
+   
+    const replaceGames = [
+      "delhi bazar",
+      "shri ganesh",
+      "faridabad",
+      "ghaziabad",
+      "gali",
+      "desawar",
+    ];
+    const normalize = (name: string) =>
+      name
+        .toLowerCase()
+        .replace(/\s+/g, "")
+        .replace("desawer", "desawar")
+        .replace("shreeganesh", "shriganesh");
+   
+        const homepageMap = new Map(
+          homepageGames.map((g) => [normalize(g.name), g])
+        );
+        
+        const finalGames = games.map((g) => {
+          const hp = homepageMap.get(normalize(g.name));
+        
+          if (hp) {
+            console.log("MATCH", g.name);
+        
+            return {
+              ...g,
+              today: hp.today ?? g.today,
+              yesterday: hp.yesterday ?? g.yesterday,
+              time: hp.time || g.time,
+            };
+          }
+        
+          return g;
+        });
+    
   const istHour = Number(
     new Intl.DateTimeFormat("en-US", {
       timeZone: "Asia/Kolkata",
@@ -477,14 +529,14 @@ function ResultBoard({ games }: { games: GameResult[] }) {
     }).format(new Date())
   );
   
-  console.log("IST Hour:", istHour);
+  // console.log("IST Hour:", istHour);
   const now = new Date();
   
   // Raat 12 baje se subah 5 baje tak
   const shouldShiftResults = istHour < 5;
-  console.log("Shift Results:", shouldShiftResults);
+  // console.log("Shift Results:", shouldShiftResults);
   
-  const displayGames = games.map((g) => {
+  const displayGames = finalGames.map((g) => {
     if (!shouldShiftResults) return g;
 
     return {
@@ -495,13 +547,7 @@ function ResultBoard({ games }: { games: GameResult[] }) {
   });
 
   const today = format(now, "MMMM d, yyyy");
-  // console.log(
-  //   games.map(g => ({
-  //     name: g.name,
-  //     yesterday: g.yesterday,
-  //     today: g.today,
-  //   }))
-  // );
+ 
   return (
     <section>
       <div className="bg-white rounded-2xl overflow-hidden shadow-lg">
@@ -533,7 +579,7 @@ function ResultBoard({ games }: { games: GameResult[] }) {
               // midnight. Only trust it once this game's declared time has
               // actually passed in IST — otherwise it's not out yet.
               const declared = isTodayResultDeclared(game.time);
-              const showToday = declared && game.today;
+              const showToday = declared && game.today;            
               return (
                 <GameCard
                   key={game.name + i}
