@@ -248,6 +248,39 @@ function Scoreboard({
     <div className="bg-[#FDF3C9]">
       <div className="max-w-[1400px] mx-auto px-2 sm:px-3 md:px-6 py-4 md:py-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+            {/* Next upcoming — dark, with pulsing WAIT badge */}
+            <div className="relative rounded-2xl bg-gradient-to-br from-[#241a06] to-[#6b4c12] p-5 md:p-6 border-2 border-[#e0a92b] overflow-hidden shadow-xl shadow-black/20">
+            <div className="absolute -right-10 -top-10 w-36 h-36 rounded-full bg-[#f5b301]/15 blur-2xl" />
+
+            <div className="relative flex items-center gap-2 text-[#FFD93B] text-[11px] md:text-xs font-extrabold uppercase tracking-[0.2em]">
+              <FiClock className="w-4 h-4" /> Next Game
+            </div>
+
+            {upNext ? (
+              <div className="relative mt-3 flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="text-white font-extrabold text-2xl md:text-4xl uppercase truncate drop-shadow-[0_2px_6px_rgba(0,0,0,0.5)]">
+                    {upNext.name}
+                  </p>
+                  <p className="text-[#FCE38A] text-xs md:text-sm font-semibold mt-1">
+                    Result expected at {upNext.time}
+                  </p>
+                </div>
+                <div
+                  title="Result awaited"
+                  aria-label="Result awaited"
+                  className="shrink-0 inline-flex flex-col items-center justify-center gap-1 bg-[#dc2626] text-white rounded-full w-16 h-16 md:w-20 md:h-20 shadow-lg shadow-[#dc2626]/40 border-2 border-white/70 animate-wait-pulse"
+                >
+                  <FiClock className="w-5 h-5 md:w-6 md:h-6" />
+                  <span className="text-[10px] md:text-xs font-extrabold tracking-widest">WAIT</span>
+                </div>
+              </div>
+            ) : (
+              <p className="relative mt-4 text-[#FCE38A] font-semibold text-base md:text-lg">
+                All of today&apos;s games are declared.
+              </p>
+            )}
+          </div>
           {/* Latest declared — dramatic dark reveal */}
           <div className="relative rounded-2xl bg-gradient-to-br from-[#2a1400] via-[#5a2408] to-[#a5370c] p-5 md:p-6 border-2 border-[#FFD93B] overflow-hidden shadow-xl shadow-[#a5370c]/30">
             {/* glow blobs */}
@@ -283,39 +316,7 @@ function Scoreboard({
             )}
           </div>
 
-          {/* Next upcoming — dark, with pulsing WAIT badge */}
-          <div className="relative rounded-2xl bg-gradient-to-br from-[#241a06] to-[#6b4c12] p-5 md:p-6 border-2 border-[#e0a92b] overflow-hidden shadow-xl shadow-black/20">
-            <div className="absolute -right-10 -top-10 w-36 h-36 rounded-full bg-[#f5b301]/15 blur-2xl" />
-
-            <div className="relative flex items-center gap-2 text-[#FFD93B] text-[11px] md:text-xs font-extrabold uppercase tracking-[0.2em]">
-              <FiClock className="w-4 h-4" /> Next Game
-            </div>
-
-            {upNext ? (
-              <div className="relative mt-3 flex items-center justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="text-white font-extrabold text-2xl md:text-4xl uppercase truncate drop-shadow-[0_2px_6px_rgba(0,0,0,0.5)]">
-                    {upNext.name}
-                  </p>
-                  <p className="text-[#FCE38A] text-xs md:text-sm font-semibold mt-1">
-                    Result expected at {upNext.time}
-                  </p>
-                </div>
-                <div
-                  title="Result awaited"
-                  aria-label="Result awaited"
-                  className="shrink-0 inline-flex flex-col items-center justify-center gap-1 bg-[#dc2626] text-white rounded-full w-16 h-16 md:w-20 md:h-20 shadow-lg shadow-[#dc2626]/40 border-2 border-white/70 animate-wait-pulse"
-                >
-                  <FiClock className="w-5 h-5 md:w-6 md:h-6" />
-                  <span className="text-[10px] md:text-xs font-extrabold tracking-widest">WAIT</span>
-                </div>
-              </div>
-            ) : (
-              <p className="relative mt-4 text-[#FCE38A] font-semibold text-base md:text-lg">
-                All of today&apos;s games are declared.
-              </p>
-            )}
-          </div>
+       
         </div>
 
         {/* Stats strip */}
