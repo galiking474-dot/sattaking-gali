@@ -3,6 +3,7 @@ import { AdSlot } from "@/components/layout/AdSlot";
 import Link from "next/link";
 import { format } from "date-fns";
 import { WhatsAppModal } from "@/components/layout/WhatsAppModal";
+import { WhatsAppChannelBanner } from "@/components/layout/WhatsAppChannelBanner";
 import { MonthlyChartSection } from "@/components/home/MonthlyChartSection";
 import { KhaiwalCard } from "@/components/home/KhaiwalCard";
 import { ScrollAnimator } from "@/components/home/ScrollAnimator";
@@ -25,7 +26,6 @@ import {
 } from "@/lib/utils";
 import { FEATURED_GAMES } from "@/lib/featured-games";
 import type { GameResult } from "@/lib/types";
-import { log } from "console";
 
 // Server-render the page and revalidate at most once every 30s. The results board
 // + charts are cached at the edge, so a traffic spike triggers at most one
@@ -33,6 +33,37 @@ import { log } from "console";
 export const revalidate = 30;
 
 // ─── Main Page (Server Component) ───
+
+// Normalize a game name for cross-source matching (whitespace + known spelling
+// variants between the scraped feeds).
+function normalizeGameName(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/\s+/g, "")
+    .replace("desawer", "desawar")
+    .replace("shreeganesh", "shriganesh");
+}
+
+// Merge the scraped homepage results (live/next/rest) onto the first-section
+// games, filling in each game's declared today/yesterday value and time.
+function mergeHomepageResults(
+  games: GameResult[],
+  homepageGames: GameResult[]
+): GameResult[] {
+  const homepageMap = new Map(
+    homepageGames.map((g) => [normalizeGameName(g.name), g])
+  );
+  return games.map((g) => {
+    const hp = homepageMap.get(normalizeGameName(g.name));
+    if (!hp) return g;
+    return {
+      ...g,
+      today: hp.today ?? g.today,
+      yesterday: hp.yesterday ?? g.yesterday,
+      time: hp.time || g.time,
+    };
+  });
+}
 
 export default async function HomePage() {
   const now = new Date();
@@ -62,9 +93,18 @@ export default async function HomePage() {
   const nextResults = (homepage?.next ?? []).filter(notInFirst);
   const restResults = (homepage?.rest ?? []).filter(notInFirst);
 
+  // Merge the scraped homepage results (live/next/rest) into the first-section
+  // games so a declared value (e.g. Desawar's 89) is reflected everywhere —
+  // both the Scoreboard spotlight and the ResultBoard read from this merged set.
+  const mergedGames = mergeHomepageResults(games, [
+    ...liveResults,
+    ...nextResults,
+    ...restResults,
+  ]);
+
   // Scoreboard spotlight — latest declared result + the next awaited game.
   const nowMin = getISTMinutesOfDay(now);
-  const timed = games
+  const timed = mergedGames
     .map((g) => ({ g, min: parseClockTime(g.time) }))
     .filter((x): x is { g: GameResult; min: number } => x.min !== null);
   const latest =
@@ -83,7 +123,7 @@ export default async function HomePage() {
     timed
       .filter((x) => !x.g.today)
       .sort((a, b) => scheduleMin(a.min) - scheduleMin(b.min))[0]?.g ?? null;
-  const declaredCount = games.filter(
+  const declaredCount = mergedGames.filter(
     (g) => isTodayResultDeclared(g.time) && g.today
   ).length;
 
@@ -141,14 +181,13 @@ export default async function HomePage() {
         total={games.length}
         declared={declaredCount}
       />
+     < WhatsAppChannelBanner/>
 
       <div className="max-w-[1400px] mx-auto px-2 sm:px-3 md:px-6 py-4 md:py-6 space-y-6 md:space-y-8">
         <AdSlot placement="homepage_top" />
 
         {/* FIRST SECTION — Results board scraped from resultsatta.com */}
-        <ResultBoard games={games} liveResults={liveResults}
-  nextResults={nextResults}
-  restResults={restResults} />
+        <ResultBoard games={mergedGames} />
 
         {/* Khaiwal / Game Schedule & Contact — directly under the first section */}
         <KhaiwalCard games={schedule} />
@@ -471,57 +510,10 @@ function GameRow({
 
 // ─── First Section: ResultSatta Results Board ───
 
-function ResultBoard({ games,liveResults,
-  nextResults,
-  restResults, }: { games: GameResult[],liveResults: GameResult[];
-  nextResults: GameResult[];
-  restResults: GameResult[]; }) {
+function ResultBoard({ games }: { games: GameResult[] }) {
+  // `games` is already merged with the homepage results upstream.
+  const finalGames = games;
 
-    const homepageGames = [
-      ...liveResults,
-      ...nextResults,
-      ...restResults,
-    ];
-    // console.log("restResults",restResults);
-    
-    
-   
-    const replaceGames = [
-      "delhi bazar",
-      "shri ganesh",
-      "faridabad",
-      "ghaziabad",
-      "gali",
-      "desawar",
-    ];
-    const normalize = (name: string) =>
-      name
-        .toLowerCase()
-        .replace(/\s+/g, "")
-        .replace("desawer", "desawar")
-        .replace("shreeganesh", "shriganesh");
-   
-        const homepageMap = new Map(
-          homepageGames.map((g) => [normalize(g.name), g])
-        );
-        
-        const finalGames = games.map((g) => {
-          const hp = homepageMap.get(normalize(g.name));
-        
-          if (hp) {
-            console.log("MATCH", g.name);
-        
-            return {
-              ...g,
-              today: hp.today ?? g.today,
-              yesterday: hp.yesterday ?? g.yesterday,
-              time: hp.time || g.time,
-            };
-          }
-        
-          return g;
-        });
-    
   const istHour = Number(
     new Intl.DateTimeFormat("en-US", {
       timeZone: "Asia/Kolkata",
