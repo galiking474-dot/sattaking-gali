@@ -110,9 +110,19 @@ export default async function GameResultPage({
         if (g[d]) timeline.push({ m, d, v: g[d] });
       });
   }
-  const todayEntry = timeline[timeline.length - 1] ?? null;
-  const yestEntry = timeline[timeline.length - 2] ?? null;
-
+  // const todayEntry = timeline[timeline.length - 1] ?? null;
+  // const yestEntry = timeline[timeline.length - 2] ?? null;
+  const today = now.getDate();
+  const currentMonth = now.getMonth();
+  
+  const todayEntry =
+    timeline.find(
+      (t) => t.d === today && t.m === currentMonth
+    ) ?? null;
+  
+  const yestEntry = todayEntry
+    ? timeline[timeline.length - 2] ?? null
+    : timeline[timeline.length - 1] ?? null;
   const todayLabel = todayEntry
     ? `${todayEntry.d} ${MONTHS_ABBR[todayEntry.m]} ${year}`
     : format(now, "dd MMM yyyy");
