@@ -79,7 +79,12 @@ export default async function HomePage() {
 
   const games = resultSatta?.games ?? [];
   const chartData = chart
-    ? { month: chart.month, year: chart.year, games: chart.games, rows: chart.rows }
+    ? {
+        month: chart.month,
+        year: chart.year,
+        games: chart.games,
+        rows: chart.rows,
+      }
     : { month: "", year: "", games: [] as string[], rows: [] };
 
   // Don't repeat first-section games in LIVE/NEXT/REST — dedupe by normalized name.
@@ -107,10 +112,12 @@ export default async function HomePage() {
   const timed = mergedGames
     .map((g) => ({ g, min: parseClockTime(g.time) }))
     .filter((x): x is { g: GameResult; min: number } => x.min !== null);
-  const latest =
-    timed
-      .filter((x) => x.min <= nowMin && x.g.today)
-      .sort((a, b) => b.min - a.min)[0]?.g ?? null;
+  const isAfterMidnight = nowMin < 5 * 60; // 12 AM - 5 AM
+
+  // const latest =
+  //   timed
+  //     .filter((x) => x.min <= nowMin && x.g.today)
+  //     .sort((a, b) => b.min - a.min)[0]?.g ?? null;
   // Next game = the earliest game (in daily schedule order) whose result has
   // NOT been declared yet. It stays on that game until its result actually
   // arrives — even if its declared time has already passed (result running
@@ -119,6 +126,18 @@ export default async function HomePage() {
   const MORNING_CUTOFF = 12 * 60;
   const scheduleMin = (min: number) =>
     min < MORNING_CUTOFF ? min + 1440 : min;
+  const latest =
+    timed
+      .filter((x) => {
+        const gameMin = scheduleMin(x.min);
+
+        return (
+          x.g.today &&
+          (gameMin <= scheduleMin(nowMin) ||
+            (isAfterMidnight && gameMin > 12 * 60))
+        );
+      })
+      .sort((a, b) => scheduleMin(b.min) - scheduleMin(a.min))[0]?.g ?? null;
   const upNext =
     timed
       .filter((x) => !x.g.today)
@@ -146,9 +165,13 @@ export default async function HomePage() {
           Satta King Gali {year}: Fast Live Results for Desawar, Faridabad,
           Ghaziabad, Gali &amp; More &mdash; Updated Every Day
         </h1>
-
-        {/* Featured market quick-links */}
-        <FeaturedGameLinks />
+        {/* Scoreboard spotlight — distinct hero band */}
+        <Scoreboard
+          latest={latest}
+          upNext={upNext}
+          total={games.length}
+          declared={declaredCount}
+        />
       </div>
 
       {/* Disclaimer */}
@@ -173,15 +196,13 @@ export default async function HomePage() {
           Last Updated: {updatedAt}
         </div>
       </div>
+      {/* Featured market quick-links */}
+      <div className=" py-5 md:py-3 px-3">
 
-      {/* Scoreboard spotlight — distinct hero band */}
-      <Scoreboard
-        latest={latest}
-        upNext={upNext}
-        total={games.length}
-        declared={declaredCount}
-      />
-     < WhatsAppChannelBanner/>
+      <FeaturedGameLinks  />
+      </div>
+
+      <WhatsAppChannelBanner />
 
       <div className="max-w-[1400px] mx-auto px-2 sm:px-3 md:px-6 py-4 md:py-6 space-y-6 md:space-y-8">
         <AdSlot placement="homepage_top" />
@@ -287,8 +308,8 @@ function Scoreboard({
     <div className="bg-[#FDF3C9]">
       <div className="max-w-[1400px] mx-auto px-2 sm:px-3 md:px-6 py-4 md:py-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
-            {/* Next upcoming — dark, with pulsing WAIT badge */}
-            <div className="relative rounded-2xl bg-gradient-to-br from-[#241a06] to-[#6b4c12] p-5 md:p-6 border-2 border-[#e0a92b] overflow-hidden shadow-xl shadow-black/20">
+          {/* Next upcoming — dark, with pulsing WAIT badge */}
+          <div className="relative rounded-2xl bg-gradient-to-br from-[#241a06] to-[#6b4c12] p-5 md:p-6 border-2 border-[#e0a92b] overflow-hidden shadow-xl shadow-black/20">
             <div className="absolute -right-10 -top-10 w-36 h-36 rounded-full bg-[#f5b301]/15 blur-2xl" />
 
             <div className="relative flex items-center gap-2 text-[#FFD93B] text-[11px] md:text-xs font-extrabold uppercase tracking-[0.2em]">
@@ -311,7 +332,9 @@ function Scoreboard({
                   className="shrink-0 inline-flex flex-col items-center justify-center gap-1 bg-[#dc2626] text-white rounded-full w-16 h-16 md:w-20 md:h-20 shadow-lg shadow-[#dc2626]/40 border-2 border-white/70 animate-wait-pulse"
                 >
                   <FiClock className="w-5 h-5 md:w-6 md:h-6" />
-                  <span className="text-[10px] md:text-xs font-extrabold tracking-widest">WAIT</span>
+                  <span className="text-[10px] md:text-xs font-extrabold tracking-widest">
+                    WAIT
+                  </span>
                 </div>
               </div>
             ) : (
@@ -354,8 +377,6 @@ function Scoreboard({
               </p>
             )}
           </div>
-
-       
         </div>
 
         {/* Stats strip */}
@@ -521,14 +542,14 @@ function ResultBoard({ games }: { games: GameResult[] }) {
       hour12: false,
     }).format(new Date())
   );
-  
+
   // console.log("IST Hour:", istHour);
   const now = new Date();
-  
+
   // Raat 12 baje se subah 5 baje tak
   const shouldShiftResults = istHour < 5;
   // console.log("Shift Results:", shouldShiftResults);
-  
+
   const displayGames = finalGames.map((g) => {
     if (!shouldShiftResults) return g;
 
@@ -540,7 +561,7 @@ function ResultBoard({ games }: { games: GameResult[] }) {
   });
 
   const today = format(now, "MMMM d, yyyy");
- 
+
   return (
     <section>
       <div className="bg-white rounded-2xl overflow-hidden shadow-lg">
@@ -572,7 +593,7 @@ function ResultBoard({ games }: { games: GameResult[] }) {
               // midnight. Only trust it once this game's declared time has
               // actually passed in IST — otherwise it's not out yet.
               const declared = isTodayResultDeclared(game.time);
-              const showToday = declared && game.today;            
+              const showToday = declared && game.today;
               return (
                 <GameCard
                   key={game.name + i}
@@ -787,7 +808,9 @@ function SeoContent() {
         today&apos;s results, previous records and daily updates in one place.
       </p>
 
-      <h2 className="text-xl font-bold text-[#a5370c]">Live Satta King Result</h2>
+      <h2 className="text-xl font-bold text-[#a5370c]">
+        Live Satta King Result
+      </h2>
       <p>
         Our website updates the latest Satta King results throughout the day.
         Whether you are looking for Gali Result, Desawar Result, Faridabad
@@ -860,7 +883,8 @@ function SeoContent() {
             Can I check old Satta results?
           </h3>
           <p>
-            Yes. Previous results and charts are available for different markets.
+            Yes. Previous results and charts are available for different
+            markets.
           </p>
         </div>
         <div>
