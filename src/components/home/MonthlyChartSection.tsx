@@ -16,6 +16,19 @@ export function MonthlyChartSection({
   games: string[];
   rows: Satta29Row[];
 }) {
+  const now = new Date();
+
+const currentMonthName = now.toLocaleString("en-US", {
+  month: "long",
+});
+
+const isCurrentMonth =
+  year === String(now.getFullYear()) &&
+  month.toLowerCase() === currentMonthName.toLowerCase();
+
+const visibleRows = isCurrentMonth
+  ? rows.filter((row) => Number(dayNum(row.date)) <= now.getDate())
+  : rows;
   // Split the games into groups of 3 so each renders as its own compact table
   // (3 games + Date) that fits a phone screen without horizontal scrolling.
   const groups: string[][] = [];
@@ -43,7 +56,7 @@ export function MonthlyChartSection({
                 </tr>
               </thead>
               <tbody>
-                {rows.map((row, i) => (
+                {visibleRows.map((row, i) => (
                   <tr
                     key={row.date}
                     className={`text-center transition-colors hover:bg-[#fdf2c9] ${
