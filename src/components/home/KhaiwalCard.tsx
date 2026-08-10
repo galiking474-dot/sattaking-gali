@@ -60,7 +60,7 @@ export function KhaiwalCard(_props?: {
           --सीधे सट्टा कंपनी का No 1 खाईवाल--
         </p>
         <p className="text-[#a5370c] font-extrabold text-2xl md:text-4xl mt-2 md:mt-3 tracking-tight">
-          &#9819; SUNNY BHAI KHAIWAL &#9819;
+          &#9819; KD BHAI KHAIWAL &#9819;
         </p>
         <p className="text-[#000] font-extrabold text-base md:text-xl mt-4">
           {phone}
@@ -101,7 +101,7 @@ export function KhaiwalCard(_props?: {
 
         {/* Brand again */}
         <p className="text-[#a5370c] font-extrabold text-2xl md:text-4xl mt-6 md:mt-8 tracking-tight">
-          &#9819; SUNNY BHAI KHAIWAL &#9819;
+          &#9819; KD BHAI KHAIWAL &#9819;
         </p>
         <p className="text-[#000] font-extrabold text-base md:text-xl mt-4">
           {phone}
