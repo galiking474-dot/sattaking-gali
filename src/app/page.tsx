@@ -109,10 +109,10 @@ export default async function HomePage() {
 
   // Scoreboard spotlight — latest declared result + the next awaited game.
   const nowMin = getISTMinutesOfDay(now);
-  const timed = mergedGames
+ const timed = mergedGames
     .map((g) => ({ g, min: parseClockTime(g.time) }))
     .filter((x): x is { g: GameResult; min: number } => x.min !== null);
-  const isAfterMidnight = nowMin < 5 * 60; // 12 AM - 5 AM
+    const isAfterMidnight = nowMin < 5 * 60; // 12 AM - 5 AM
 
   // const latest =
   //   timed
@@ -126,18 +126,26 @@ export default async function HomePage() {
   const MORNING_CUTOFF = 12 * 60;
   const scheduleMin = (min: number) =>
     min < MORNING_CUTOFF ? min + 1440 : min;
-  const latest =
-    timed
-      .filter((x) => {
-        const gameMin = scheduleMin(x.min);
+  // const latest =
+  //   timed
+  //     .filter((x) => {
+  //       const gameMin = scheduleMin(x.min);
 
-        return (
-          x.g.today &&
-          (gameMin <= scheduleMin(nowMin) ||
-            (isAfterMidnight && gameMin > 12 * 60))
-        );
-      })
-      .sort((a, b) => scheduleMin(b.min) - scheduleMin(a.min))[0]?.g ?? null;
+  //       return (
+  //         x.g.today &&
+  //         (gameMin <= scheduleMin(nowMin) ||
+  //           (isAfterMidnight && gameMin > 12 * 60))
+  //       );
+  //     })
+  //     .sort((a, b) => scheduleMin(b.min) - scheduleMin(a.min))[0]?.g ?? null;
+  const latest =
+  mergedGames
+    .filter((g) => isTodayResultDeclared(g.time) && g.today)
+    .sort(
+      (a, b) =>
+        (parseClockTime(b.time) ?? 0) -
+        (parseClockTime(a.time) ?? 0)
+    )[0] ?? null;
   const upNext =
     timed
       .filter((x) => !x.g.today)
