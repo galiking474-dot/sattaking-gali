@@ -1,4 +1,5 @@
 import { format } from "date-fns";
+import type { GameResult } from "@/lib/types";
 
 export function getTodayDateString(): string {
   return format(new Date(), "yyyy-MM-dd");
@@ -52,6 +53,24 @@ export function getISTMinutesOfDay(now: Date = new Date()): number {
   return hours * 60 + minutes;
 }
 
+export function getISTDateParts(now: Date = new Date()): {
+  year: number;
+  month: number;
+  day: number;
+} {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Kolkata",
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+  }).formatToParts(now);
+  return {
+    year: Number(parts.find((part) => part.type === "year")?.value),
+    month: Number(parts.find((part) => part.type === "month")?.value) - 1,
+    day: Number(parts.find((part) => part.type === "day")?.value),
+  };
+}
+
 // A game's "today" result is only real once its declared time has passed in IST.
 // Before that (e.g. just after midnight) the scraped value is yesterday's leftover,
 // so it must be treated as not-yet-declared. Fails open (shows) if the time is
@@ -63,6 +82,30 @@ export function isTodayResultDeclared(
   const declaredAt = parseClockTime(gameTime);
   if (declaredAt === null) return true;
   return getISTMinutesOfDay(now) >= declaredAt;
+}
+
+// The source keeps the just-finished day's values in its `today` column after
+// midnight. Gali is commonly announced in this window, so until the morning
+// rollover finishes that value belongs under Yesterday, never Today. Normalize
+// once before deriving the hero, counts, or result cards so every section agrees.
+export function normalizeResultDay(
+  game: GameResult,
+  now: Date = new Date()
+): GameResult {
+  if (getISTMinutesOfDay(now) >= 5 * 60) return game;
+
+  return {
+    ...game,
+    yesterday: game.today || game.yesterday,
+    today: "",
+  };
+}
+
+export function normalizeResultDays(
+  games: GameResult[],
+  now: Date = new Date()
+): GameResult[] {
+  return games.map((game) => normalizeResultDay(game, now));
 }
 
 export function cn(...classes: (string | boolean | undefined | null)[]): string {

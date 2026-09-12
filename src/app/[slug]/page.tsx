@@ -1,11 +1,14 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { format } from "date-fns";
 import { FiClock, FiArrowRight, FiAward, FiBarChart2 } from "react-icons/fi";
-import { getSatta29Chart } from "@/lib/api-helpers";
+import { getMonthlyChart, getSatta29Chart } from "@/lib/api-helpers";
 import { getFeaturedGame, FEATURED_GAMES } from "@/lib/featured-games";
 import { KhaiwalCard } from "@/components/home/KhaiwalCard";
+import { YearlyArchive } from "@/components/charts/YearlyArchive";
+import { parseArchiveSlug } from "@/lib/archive-games";
+import { getISTDateParts, isTodayResultDeclared } from "@/lib/utils";
+import { getYearlyChartHistoryFromFirestore } from "@/lib/firebase-cache";
 
 // Revalidate at the edge every 30s, same cadence as the homepage.
 export const revalidate = 30;
@@ -52,6 +55,19 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
+  const archive = parseArchiveSlug(slug);
+  if (archive) {
+    const title = `${archive.game.name} Satta Result Chart ${archive.year} | Old Record`;
+    const description = `View the complete ${archive.game.name} Satta result chart ${archive.year} with month-by-month records. Browse historical ${archive.game.name} results from 2015 to 2026.`;
+    return {
+      title: { absolute: title },
+      description,
+      alternates: { canonical: `/${slug}` },
+      openGraph: { title, description, url: `/${slug}`, type: "website" },
+      twitter: { card: "summary", title, description },
+    };
+  }
+
   const base = baseSlug(slug);
   const game = base ? getFeaturedGame(base) : undefined;
   if (!game) return { title: "Satta King Result" };
@@ -72,13 +88,45 @@ export default async function GameResultPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  const archive = parseArchiveSlug(slug);
+  if (archive) {
+    const current = getISTDateParts();
+    const firebaseRecords = await getYearlyChartHistoryFromFirestore(
+      archive.game.slug,
+      archive.year
+    );
+    const charts = await Promise.all(
+      MONTHS_FULL.map((month, monthIndex) => {
+        if (
+          archive.year > current.year ||
+          (archive.year === current.year && monthIndex > current.month)
+        ) {
+          return Promise.resolve(null);
+        }
+        if (firebaseRecords[monthIndex]?.length) {
+          return Promise.resolve(null);
+        }
+        return getMonthlyChart(month.toLowerCase(), String(archive.year));
+      })
+    );
+    return (
+      <YearlyArchive
+        game={archive.game}
+        year={archive.year}
+        charts={charts}
+        firebaseRecords={firebaseRecords}
+      />
+    );
+  }
+
   const base = baseSlug(slug);
   const game = base ? getFeaturedGame(base) : undefined;
   if (!game) notFound();
 
   const now = new Date();
-  const year = now.getFullYear();
-  const curMonth = now.getMonth(); // 0-based
+  const istDate = getISTDateParts(now);
+  const year = istDate.year;
+  const curMonth = istDate.month;
   const monthsToShow = MONTHS_FULL.slice(0, curMonth + 1);
 
   // Pull the satta29 combined monthly chart for every month of the current year
@@ -112,20 +160,25 @@ export default async function GameResultPage({
   }
   // const todayEntry = timeline[timeline.length - 1] ?? null;
   // const yestEntry = timeline[timeline.length - 2] ?? null;
-  const today = now.getDate();
-  const currentMonth = now.getMonth();
+  const today = istDate.day;
+  const currentMonth = istDate.month;
   
   const todayEntry =
-    timeline.find(
-      (t) => t.d === today && t.m === currentMonth
-    ) ?? null;
+    isTodayResultDeclared(game.time, now)
+      ? timeline.find((t) => t.d === today && t.m === currentMonth) ?? null
+      : null;
   
   const yestEntry = todayEntry
     ? timeline[timeline.length - 2] ?? null
     : timeline[timeline.length - 1] ?? null;
   const todayLabel = todayEntry
     ? `${todayEntry.d} ${MONTHS_ABBR[todayEntry.m]} ${year}`
-    : format(now, "dd MMM yyyy");
+    : new Intl.DateTimeFormat("en-GB", {
+        timeZone: "Asia/Kolkata",
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      }).format(now);
 
   return (
     <div className="max-w-4xl mx-auto px-2 sm:px-3 md:px-6 py-4 md:py-6 space-y-6 md:space-y-8">

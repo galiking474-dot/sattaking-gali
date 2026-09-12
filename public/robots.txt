@@ -1,5 +1,7 @@
 User-agent: *
 Allow: /
 Disallow: /api/
+Disallow: /admin/
 
 Sitemap: https://sattaking-gali.com/sitemap.xml
+Host: sattaking-gali.com

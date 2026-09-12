@@ -168,6 +168,42 @@ import { adminDb } from "./firebase-admin";
 
 const COLLECTION = "scraped_cache";
 
+export interface FirebaseArchiveRecord {
+  date: string;
+  result: string;
+}
+
+// Admin-managed chart documents use `${gameCode}_${year}-${month}` IDs. Read a
+// full year in one Firebase operation so archive pages do not issue 12 separate
+// client SDK requests.
+export async function getYearlyChartHistoryFromFirestore(
+  gameCode: string,
+  year: number
+): Promise<FirebaseArchiveRecord[][]> {
+  try {
+    const refs = Array.from({ length: 12 }, (_, index) =>
+      adminDb
+        .collection("charts_history")
+        .doc(`${gameCode}_${year}-${String(index + 1).padStart(2, "0")}`)
+    );
+    const snapshots = await adminDb.getAll(...refs);
+    return snapshots.map((snapshot) =>
+      (snapshot.data()?.records ?? []).map(
+        (record: { date?: unknown; result?: unknown }) => ({
+          date: String(record.date ?? ""),
+          result: String(record.result ?? ""),
+        })
+      )
+    );
+  } catch (err) {
+    console.error(
+      "[firebase-cache] Failed to read yearly chart history:",
+      (err as Error).message
+    );
+    return Array.from({ length: 12 }, () => []);
+  }
+}
+
 // ─── First-section live-board data (scraped from satta29.com) ───
 // Stored in its OWN document so it never clobbers the other site's `homepage`
 // doc that shares this Firebase project.

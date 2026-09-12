@@ -1,6 +1,12 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+} from "react";
 import {
   onAuthStateChanged,
   signInWithEmailAndPassword,
@@ -35,29 +41,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(getFirebaseAuth(), async (firebaseUser) => {
-      if (firebaseUser) {
-        const adminDoc = await getDoc(doc(getDb(), "admins", firebaseUser.uid));
-        if (adminDoc.exists() && adminDoc.data().isActive) {
-          setUser(firebaseUser);
-          setAdmin(adminDoc.data() as Admin);
+    const unsubscribe = onAuthStateChanged(
+      getFirebaseAuth(),
+      async (firebaseUser) => {
+        if (firebaseUser) {
+          const adminDoc = await getDoc(
+            doc(getDb(), "admins", firebaseUser.uid),
+          );
+          if (adminDoc.exists() && adminDoc.data().isActive) {
+            setUser(firebaseUser);
+            setAdmin(adminDoc.data() as Admin);
+          } else {
+            await firebaseSignOut(getFirebaseAuth());
+            setUser(null);
+            setAdmin(null);
+          }
         } else {
-          await firebaseSignOut(getFirebaseAuth());
           setUser(null);
           setAdmin(null);
         }
-      } else {
-        setUser(null);
-        setAdmin(null);
-      }
-      setLoading(false);
-    });
+        setLoading(false);
+      },
+    );
     return () => unsubscribe();
   }, []);
 
   const signIn = async (email: string, password: string) => {
     await setPersistence(getFirebaseAuth(), browserSessionPersistence);
-    const cred = await signInWithEmailAndPassword(getFirebaseAuth(), email, password);
+    const cred = await signInWithEmailAndPassword(
+      getFirebaseAuth(),
+      email,
+      password,
+    );
     const adminDoc = await getDoc(doc(getDb(), "admins", cred.user.uid));
     if (!adminDoc.exists() || !adminDoc.data().isActive) {
       await firebaseSignOut(getFirebaseAuth());

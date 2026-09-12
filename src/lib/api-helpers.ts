@@ -190,6 +190,33 @@ async function refreshSK24(): Promise<SK24GamesData | null> {
 
 const CHART_STALE_MS = 10 * 60 * 1000; // 10 minutes
 
+function isPastChartPeriod(monthName: string, year: string): boolean {
+  const monthIndex = [
+    "january", "february", "march", "april", "may", "june",
+    "july", "august", "september", "october", "november", "december",
+  ].indexOf(monthName.toLowerCase());
+  const chartYear = Number(year);
+  if (monthIndex < 0 || !Number.isInteger(chartYear)) return false;
+
+  const currentYear = Number(
+    new Intl.DateTimeFormat("en", {
+      timeZone: "Asia/Kolkata",
+      year: "numeric",
+    }).format(new Date())
+  );
+  const currentMonth = Number(
+    new Intl.DateTimeFormat("en", {
+      timeZone: "Asia/Kolkata",
+      month: "numeric",
+    }).format(new Date())
+  ) - 1;
+
+  return (
+    chartYear < currentYear ||
+    (chartYear === currentYear && monthIndex < currentMonth)
+  );
+}
+
 export async function getMonthlyChart(
   monthName: string,
   year: string
@@ -202,7 +229,11 @@ export async function getMonthlyChart(
   if (cached) return cached;
 
   const firebaseData = await getMonthlyChartFromFirestore(month, year);
-  if (firebaseData && Date.now() - firebaseData.scrapedAt < CHART_STALE_MS) {
+  if (
+    firebaseData &&
+    (isPastChartPeriod(month, year) ||
+      Date.now() - firebaseData.scrapedAt < CHART_STALE_MS)
+  ) {
     memSet(cacheKey, firebaseData, 120);
     return firebaseData;
   }
@@ -211,7 +242,7 @@ export async function getMonthlyChart(
     const results = await scrapeMonthlyChart(month, year);
     const chartData: MonthlyChartData = { month: formattedMonth, year, results, scrapedAt: Date.now() };
     memSet(cacheKey, chartData, 120);
-    saveMonthlyChartToFirestore(month, year, chartData).catch(() => {});
+    await saveMonthlyChartToFirestore(month, year, chartData);
     return chartData;
   } catch {
     if (firebaseData) {

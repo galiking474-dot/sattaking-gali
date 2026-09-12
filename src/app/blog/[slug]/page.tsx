@@ -24,7 +24,7 @@ export async function generateMetadata({
     title: post.metaTitle,
     description: post.metaDescription,
     alternates: {
-      canonical: `https://www.todaysattaresults.com/blog/${post.slug}`,
+      canonical: `https://sattaking-gali.com/blog/${post.slug}`,
     },
     openGraph: {
       title: post.metaTitle,

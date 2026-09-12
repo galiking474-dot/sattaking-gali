@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Privacy Policy",
   description: "Privacy policy for Satta Result website.",
+  alternates: { canonical: "/privacy" },
 };
 
 export default function PrivacyPage() {

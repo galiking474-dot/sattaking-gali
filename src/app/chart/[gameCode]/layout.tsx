@@ -66,7 +66,7 @@ export async function generateMetadata({
   const description =
     CHART_DESCRIPTIONS[gameCode] ??
     `Check the latest ${gameName} Satta King chart with today's result, old records, previous winning numbers, and complete historical data.`;
-  const url = `https://todaysattaresults.com/chart/${gameCode}`;
+  const url = `https://sattaking-gali.com/chart/${gameCode}`;
 
   return {
     title: { absolute: title },

@@ -8,8 +8,8 @@ const MONTHS = [
   "July", "August", "September", "October", "November", "December",
 ];
 
-// satta29.com publishes records back to 2005.
-const START_YEAR = 2005;
+const START_YEAR = 2015;
+const END_YEAR = 2026;
 
 function weekday(iso: string): string {
   const d = new Date(iso + "T00:00:00");
@@ -39,7 +39,7 @@ export function Satta29Chart({
   const [rows, setRows] = useState(initialRows);
   const [loading, setLoading] = useState(false);
 
-  const currentYear = new Date().getFullYear();
+  const currentYear = Math.min(new Date().getFullYear(), END_YEAR);
   const years: string[] = [];
   for (let y = currentYear; y >= START_YEAR; y--) years.push(String(y));
 

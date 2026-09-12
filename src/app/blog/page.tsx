@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   title: "Satta King Blog — Guides, History & Chart Information",
   description:
     "Read guides on Satta King results, today satta result updates, chart history and safe tips. Stay informed with organized daily records and market information.",
+  alternates: { canonical: "/blog" },
 };
 
 function formatDate(iso: string) {

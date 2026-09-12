@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "About Us",
   description: "Learn about Satta Result - your trusted source for live daily results and chart records.",
+  alternates: { canonical: "/about" },
 };
 
 export default function AboutPage() {

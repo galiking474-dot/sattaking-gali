@@ -20,18 +20,26 @@ const geistMono = Geist_Mono({
 export async function generateMetadata(): Promise<Metadata> {
   const now = new Date();
 
-  const formattedDate = now.toLocaleDateString("en-IN", {
+  const shortDate = now.toLocaleDateString("en-IN", {
+    timeZone: "Asia/Kolkata",
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  }).replace(/\bSept\b/, "Sep");
+  const longDate = now.toLocaleDateString("en-IN", {
+    timeZone: "Asia/Kolkata",
     day: "numeric",
     month: "long",
     year: "numeric",
   });
 
-  const title = `Satta King Gali Result ${formattedDate} | Live Gali, Desawar, Faridabad & Ghaziabad Results`;
+  const title = `SattaKing-Gali.com | Satta King Result Today ${shortDate}`;
 
-  const description = `Satta King Gali Result ${formattedDate} — live Gali, Desawar, Faridabad, Ghaziabad, Delhi Bazar & Shree Ganesh results. Fast daily updates, Satta King charts, records and market results.`;
+  const description = `Check Satta King Result Today ${longDate} on SattaKing-Gali.com. View latest results, old charts, Gali, Desawar, Faridabad, Ghaziabad updates.`;
 
   return {
-    metadataBase: new URL("https://sattaking-gali.com"),
+    metadataBase: new URL("https://www.sattaking-gali.com"),
+    applicationName: "SattaKing-Gali",
     verification: {
       google: "GC76cAN54Y8QT4fuDqTr-P_sNckbLt4wkHfp5xwJUx8",
     },
@@ -56,7 +64,7 @@ export async function generateMetadata(): Promise<Metadata> {
     openGraph: {
       type: "website",
       locale: "en_IN",
-      url: "https://www.sattaking-gali.com",
+      url: "/",
       siteName: "SattaKing-Gali",
       title,
       description,
@@ -65,11 +73,24 @@ export async function generateMetadata(): Promise<Metadata> {
     robots: {
       index: true,
       follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        "max-image-preview": "large",
+        "max-snippet": -1,
+        "max-video-preview": -1,
+      },
     },
 
     alternates: {
-      canonical: "https://www.sattaking-gali.com",
+      canonical: "/",
     },
+    twitter: {
+      card: "summary",
+      title,
+      description,
+    },
+    manifest: "/manifest.json",
   };
 }
 // export const metadata: Metadata = {
@@ -111,113 +132,139 @@ export async function generateMetadata(): Promise<Metadata> {
 //   },
 // };
 
-const jsonLd = {
-  "@context": "https://schema.org",
-  "@graph": [
-    {
-      "@type": "WebSite",
-      "@id": "https://www.sattaking-gali.com/#website",
-      url: "https://www.sattaking-gali.com/",
-      name: "SattaKing-Gali.com",
-      description:
-        "Satta King Gali results, Gali Result, Desawar Result, Faridabad Result, Ghaziabad Result and Satta King charts.",
-      inLanguage: "en-IN",
-      publisher: {
-        "@id": "https://www.sattaking-gali.com/#organization",
-      },
-    },
-    {
-      "@type": "Organization",
-      "@id": "https://www.sattaking-gali.com/#organization",
-      name: "SattaKing-Gali.com",
-      url: "https://www.sattaking-gali.com/",
-    },
-    {
-      "@type": "WebPage",
-      "@id": "https://www.sattaking-gali.com/#webpage",
-      url: "https://www.sattaking-gali.com/",
-      name: "Satta King Gali 2026: Fast Live Results for Desawar, Faridabad, Ghaziabad, Gali & More",
-      description:
-        "Check Satta King Gali results, Gali Result, Desawar Result, Faridabad Result, Ghaziabad Result and Satta King charts with daily updates.",
-      isPartOf: {
-        "@id": "https://www.sattaking-gali.com/#website",
-      },
-      about: {
-        "@id": "https://www.sattaking-gali.com/#organization",
-      },
-      breadcrumb: {
-        "@id": "https://www.sattaking-gali.com/#breadcrumb",
-      },
-      inLanguage: "en-IN",
-    },
-    {
-      "@type": "BreadcrumbList",
-      "@id": "https://www.sattaking-gali.com/#breadcrumb",
-      itemListElement: [
-        {
-          "@type": "ListItem",
-          position: 1,
-          name: "Home",
-          item: "https://www.sattaking-gali.com/",
-        },
-      ],
-    },
-    {
-      "@type": "FAQPage",
-      "@id": "https://www.sattaking-gali.com/#faq",
-      mainEntity: [
-        {
-          "@type": "Question",
-          name: "What is SattaKing-Gali?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "SattaKing-Gali provides daily result information for markets including Gali, Desawar, Faridabad and Ghaziabad.",
+function getJsonLd(dateModified: string) {
+  const siteUrl = "https://www.sattaking-gali.com/";
+
+  return {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebSite",
+        "@id": `${siteUrl}#website`,
+        url: siteUrl,
+        name: "SattaKing-Gali.com",
+        description:
+          "Satta King Result Today 2026 with latest Gali, Desawar, Faridabad, Ghaziabad, Delhi Bazar and other Satta result updates.",
+        inLanguage: "en-IN",
+        dateModified,
+        potentialAction: {
+          "@type": "SearchAction",
+          target: {
+            "@type": "EntryPoint",
+            urlTemplate: `${siteUrl}?s={search_term_string}`,
           },
+          "query-input": "required name=search_term_string",
         },
-        {
-          "@type": "Question",
-          name: "How often are results updated?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "Results are updated when the respective market declares its result.",
+      },
+      {
+        "@type": "Organization",
+        "@id": `${siteUrl}#organization`,
+        name: "SattaKing-Gali.com",
+        url: siteUrl,
+        description:
+          "SattaKing-Gali.com provides game-wise Satta result updates, charts and previous records information.",
+        logo: {
+          "@type": "ImageObject",
+          url: `${siteUrl}wp-content/uploads/logo.png`,
+        },
+      },
+      {
+        "@type": "WebPage",
+        "@id": `${siteUrl}#webpage`,
+        url: siteUrl,
+        name: "Satta King Result Today 2026 – Fast & Latest Satta Result Updates",
+        isPartOf: { "@id": `${siteUrl}#website` },
+        about: {
+          "@type": "Thing",
+          name: "Satta King Result Today 2026",
+        },
+        datePublished: "2026-01-01",
+        dateModified,
+        breadcrumb: { "@id": `${siteUrl}#breadcrumb` },
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": `${siteUrl}#breadcrumb`,
+        itemListElement: [
+          {
+            "@type": "ListItem",
+            position: 1,
+            name: "Home",
+            item: siteUrl,
           },
-        },
-        {
-          "@type": "Question",
-          name: "Can I check old Satta results?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "Yes. Previous results and charts are available for different markets.",
+          {
+            "@type": "ListItem",
+            position: 2,
+            name: "Satta King Result Today 2026",
+            item: siteUrl,
           },
-        },
-        {
+        ],
+      },
+      {
+        "@type": "FAQPage",
+        "@id": `${siteUrl}#faq`,
+        mainEntity: [
+          [
+            "Where can I check Satta King Result Today 2026?",
+            "You can check the latest available Satta King Result 2026 from the dedicated result sections on SattaKing-Gali.com.",
+          ],
+          [
+            "Which website provides fast Satta Result updates?",
+            "SattaKing-Gali.com organizes different Satta markets separately so users can quickly find available result updates.",
+          ],
+          [
+            "Where can I check Gali Satta King Result Today?",
+            "You can visit the Gali Satta King section to check available Gali Result updates, charts and previous records.",
+          ],
+          [
+            "How can I check Desawar Result 2026?",
+            "Open the Desawar or Disawar result section to view available Desawar results and previous chart records.",
+          ],
+          [
+            "Can I check old Satta King charts?",
+            "Yes, available record chart sections allow users to browse previous Satta King records by game.",
+          ],
+          [
+            "Are Satta King charts used to predict future results?",
+            "No. Satta charts only display historical records and previous results. They cannot guarantee future outcomes.",
+          ],
+          [
+            "Why should I use SattaKing-Gali.com for results?",
+            "The website provides a simple game-wise structure where users can find different Satta results, charts and previous records in one place.",
+          ],
+        ].map(([name, text]) => ({
           "@type": "Question",
-          name: "Is this website mobile friendly?",
-          acceptedAnswer: {
-            "@type": "Answer",
-            text: "Yes. The website is designed to work on mobile, tablet and desktop devices.",
-          },
-        },
-      ],
-    },
-  ],
-};
+          name,
+          acceptedAnswer: { "@type": "Answer", text },
+        })),
+      },
+    ],
+  };
+}
 
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const dateModified = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Kolkata",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
+  const jsonLd = getJsonLd(dateModified);
+
   return (
     <html
-      lang="en"
+      lang="en-IN"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
-            __html: JSON.stringify(jsonLd),
+            __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c"),
           }}
         />
 

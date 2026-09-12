@@ -37,7 +37,7 @@ const visibleRows = isCurrentMonth
   return (
     <div className="">
       <div className="bg-white rounded-xl border-2 border-[#e0850b] overflow-hidden shadow-lg">
-        <div className="bg-gradient-to-r from-[#FFD93B] to-[#F5A623] text-[#a5370c] text-center py-2.5 md:py-3 text-[14px] md:text-sm font-bold px-2 md:px-3 leading-relaxed border-b-2 border-[#e0850b]">
+        <div className="bg-linear-to-r from-[#FFD93B] to-[#F5A623] text-[#a5370c] text-center py-2.5 md:py-3 text-[14px] md:text-sm font-bold px-2 md:px-3 leading-relaxed border-b-2 border-[#e0850b]">
           Satta King Chart {month} {year} <span className="hidden sm:inline">&mdash; Faridabad Day, Delhi Bazar, Shree Ganesh, Faridabad, Old Alwar, Ghaziabad, Dehradun City, Gali &amp; Desawar</span>
         </div>
 
