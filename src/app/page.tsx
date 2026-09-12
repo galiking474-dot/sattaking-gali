@@ -22,11 +22,16 @@ import {
   isTodayResultDeclared,
   parseClockTime,
   getISTMinutesOfDay,
+  getISTDateParts,
   normalizeResultDays,
 } from "@/lib/utils";
 import { FEATURED_GAMES } from "@/lib/featured-games";
 import type { GameResult } from "@/lib/types";
 import { PreviousYearCharts } from "@/components/home/PreviousYearCharts";
+import {
+  getDailyResultOverridesFromFirestore,
+  type DailyResultOverride,
+} from "@/lib/firebase-cache";
 
 // Server-render the page and revalidate at most once every 30s. The results board
 // + charts are cached at the edge, so a traffic spike triggers at most one
@@ -91,6 +96,22 @@ function mergeHomepageResults(
   });
 }
 
+function mergeAdminOverrides(
+  games: GameResult[],
+  overrides: DailyResultOverride[],
+): GameResult[] {
+  const overrideMap = new Map<string, DailyResultOverride>();
+  for (const override of overrides) {
+    overrideMap.set(normalizeGameName(override.gameCode), override);
+    overrideMap.set(normalizeGameName(override.gameName), override);
+  }
+
+  return games.map((game) => {
+    const override = overrideMap.get(normalizeGameName(game.name));
+    return override ? { ...game, today: override.result } : game;
+  });
+}
+
 export default async function HomePage() {
   const now = new Date();
   const month = new Intl.DateTimeFormat("en-US", {
@@ -103,12 +124,15 @@ export default async function HomePage() {
     timeZone: "Asia/Kolkata",
     year: "numeric",
   }).format(now);
+  const todayParts = getISTDateParts(now);
+  const today = `${todayParts.year}-${String(todayParts.month + 1).padStart(2, "0")}-${String(todayParts.day).padStart(2, "0")}`;
 
   // Fetch everything on the server, directly from the data layer (no self-HTTP).
-  const [resultSatta, homepage, chart] = await Promise.all([
+  const [resultSatta, homepage, chart, adminOverrides] = await Promise.all([
     getResultSattaData(),
     getSharedHomepageData(),
     getSatta29Chart(month, year),
+    getDailyResultOverridesFromFirestore(today),
   ]);
 
   const games = (resultSatta?.games ?? []).filter(isVisibleGame);
@@ -134,18 +158,28 @@ export default async function HomePage() {
   // Merge the scraped homepage results (live/next/rest) into the first-section
   // games so a declared value (e.g. Desawar's 89) is reflected everywhere —
   // both the Scoreboard spotlight and the ResultBoard read from this merged set.
-  const mergedGames = normalizeResultDays(
+  const rawMergedGames = mergeAdminOverrides(
     mergeHomepageResults(games, [
       ...liveResults,
       ...nextResults,
       ...restResults,
     ]),
-    now,
+    adminOverrides,
   );
+  const mergedGames = normalizeResultDays(rawMergedGames, now);
 
   // Scoreboard spotlight — latest declared result + the next awaited game.
   const nowMin = getISTMinutesOfDay(now);
-  const timed = mergedGames
+  const schedulingGames =
+    nowMin < 5 * 60
+      ? rawMergedGames.map((game) => {
+          const gameMinutes = parseClockTime(game.time);
+          return gameMinutes !== null && gameMinutes < 12 * 60
+            ? { ...game, today: "" }
+            : game;
+        })
+      : mergedGames;
+  const timed = schedulingGames
     .map((g) => ({ g, min: parseClockTime(g.time) }))
     .filter((x): x is { g: GameResult; min: number } => x.min !== null);
 
@@ -158,13 +192,26 @@ export default async function HomePage() {
   const scheduleMin = (min: number) =>
     min < MORNING_CUTOFF ? min + 1440 : min;
   const operationalNow = scheduleMin(nowMin);
+  const RESULT_DELAY_GRACE_MINUTES = 180;
   const minutesUntil = (min: number) => {
     const distance = scheduleMin(min) - operationalNow;
-    return distance >= 0 ? distance : distance + 1440;
+    // Keep a recently-passed game at the front while its result is delayed.
+    // Once the grace window has elapsed, treat it as the next day's game.
+    return distance >= -RESULT_DELAY_GRACE_MINUTES
+      ? distance
+      : distance + 1440;
   };
+  const latestCandidates =
+    nowMin < 5 * 60
+      ? rawMergedGames.filter((game) => {
+          const gameMinutes = parseClockTime(game.time);
+          return gameMinutes !== null && gameMinutes >= 12 * 60 && game.today;
+        })
+      : mergedGames.filter(
+          (game) => isTodayResultDeclared(game.time) && game.today,
+        );
   const latest =
-    mergedGames
-      .filter((g) => isTodayResultDeclared(g.time) && g.today)
+    latestCandidates
       .sort(
         (a, b) => (parseClockTime(b.time) ?? 0) - (parseClockTime(a.time) ?? 0),
       )[0] ?? null;

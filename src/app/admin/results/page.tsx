@@ -12,7 +12,7 @@ import type { GameResult } from "@/types";
 export default function AdminResultsPage() {
   const { user } = useAuth();
   const [date, setDate] = useState(getTodayDateString());
-  const { results, loading } = useLiveResults(date);
+  const { results, loading, refresh } = useLiveResults(date);
   const [selectedGame, setSelectedGame] = useState(DEFAULT_GAMES[0].gameCode);
   const [resultValue, setResultValue] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -39,6 +39,26 @@ export default function AdminResultsPage() {
         declaredAt: Timestamp.now(),
       };
       await updateDailyResult(date, gameResult, user?.uid || "");
+
+      const revalidateHomepage = async () => {
+        if (!user) return;
+        try {
+          const token = await user.getIdToken();
+          const response = await fetch("/api/revalidate-results", {
+            method: "POST",
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (!response.ok) {
+            console.error("Homepage result cache revalidation failed");
+          }
+        } catch (error) {
+          // The result is already stored. Cache invalidation failure must not
+          // incorrectly report the completed database write as failed.
+          console.error("Homepage result cache revalidation failed", error);
+        }
+      };
+
+      await Promise.all([refresh(), revalidateHomepage()]);
       toast.success(`${game.gameName} result updated to ${resultValue}`);
       setResultValue("");
     } catch {

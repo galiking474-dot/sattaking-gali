@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { getTodayResults } from "@/lib/firestore";
 import type { DailyResult } from "@/types";
 import { getTodayDateString } from "@/lib/utils";
@@ -11,24 +11,41 @@ import { getTodayDateString } from "@/lib/utils";
 export function useLiveResults(date?: string) {
   const [results, setResults] = useState<DailyResult | null>(null);
   const [loading, setLoading] = useState(true);
+  const requestId = useRef(0);
+
+  const refresh = useCallback(async () => {
+    const currentRequest = ++requestId.current;
+    const targetDate = date || getTodayDateString();
+
+    try {
+      const data = await getTodayResults(targetDate);
+      if (currentRequest === requestId.current) setResults(data);
+    } catch {
+      // Keep the last known value visible when a refresh temporarily fails.
+    } finally {
+      if (currentRequest === requestId.current) setLoading(false);
+    }
+  }, [date]);
 
   useEffect(() => {
+    const currentRequest = ++requestId.current;
     const targetDate = date || getTodayDateString();
-    let active = true;
+
     getTodayResults(targetDate)
       .then((data) => {
-        if (active) {
-          setResults(data);
-          setLoading(false);
-        }
+        if (currentRequest === requestId.current) setResults(data);
       })
       .catch(() => {
-        if (active) setLoading(false);
+        // Keep the last known value visible when the initial read fails.
+      })
+      .finally(() => {
+        if (currentRequest === requestId.current) setLoading(false);
       });
+
     return () => {
-      active = false;
+      requestId.current += 1;
     };
   }, [date]);
 
-  return { results, loading };
+  return { results, loading, refresh };
 }

@@ -173,6 +173,54 @@ export interface FirebaseArchiveRecord {
   result: string;
 }
 
+export interface DailyResultOverride {
+  gameCode: string;
+  gameName: string;
+  result: string;
+  status: "pending" | "declared";
+}
+
+// Admin-declared values are intentionally read separately from scraped data.
+// The homepage can use them as a narrow, authoritative override without
+// modifying or deleting any of the existing scraped cache documents.
+export async function getDailyResultOverridesFromFirestore(
+  date: string
+): Promise<DailyResultOverride[]> {
+  try {
+    const snapshot = await adminDb.collection("daily_results").doc(date).get();
+    if (!snapshot.exists) return [];
+
+    const results = snapshot.data()?.results;
+    if (!Array.isArray(results)) return [];
+
+    return results
+      .filter(
+        (item): item is Record<string, unknown> =>
+          typeof item === "object" && item !== null
+      )
+      .map((item): DailyResultOverride => ({
+        gameCode: String(item.gameCode ?? ""),
+        gameName: String(item.gameName ?? ""),
+        result: String(item.result ?? ""),
+        status: item.status === "declared" ? "declared" : "pending",
+      }))
+      .filter(
+        (item) =>
+          item.status === "declared" &&
+          /^\d{2}$/.test(item.result) &&
+          Boolean(item.gameCode || item.gameName)
+      );
+  } catch (err) {
+    // Preserve the existing scraped result path if the optional override read
+    // is unavailable. A transient Firebase error must not blank the homepage.
+    console.error(
+      "[firebase-cache] Failed to read daily result overrides:",
+      (err as Error).message
+    );
+    return [];
+  }
+}
+
 // Admin-managed chart documents use `${gameCode}_${year}-${month}` IDs. Read a
 // full year in one Firebase operation so archive pages do not issue 12 separate
 // client SDK requests.
