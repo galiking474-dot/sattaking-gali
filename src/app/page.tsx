@@ -32,6 +32,10 @@ import {
   getDailyResultOverridesFromFirestore,
   type DailyResultOverride,
 } from "@/lib/firebase-cache";
+import {
+  getLuckySattaDailyResults,
+  type LuckySattaDailyResult,
+} from "@/lib/lucky-satta-results";
 
 // Server-render the page and revalidate at most once every 30s. The results board
 // + charts are cached at the edge, so a traffic spike triggers at most one
@@ -48,6 +52,8 @@ function normalizeGameName(name: string): string {
     .replace(/&(?:#x20|#32|nbsp);/gi, "")
     .replace(/[^a-z0-9]/g, "")
     .replace("desawer", "desawar")
+    .replace("disawer", "desawar")
+    .replace("disawar", "desawar")
     .replace("shreeganesh", "shriganesh");
 }
 
@@ -112,6 +118,24 @@ function mergeAdminOverrides(
   });
 }
 
+function mergeLuckySattaResults(
+  games: GameResult[],
+  results: LuckySattaDailyResult[] | null,
+): GameResult[] {
+  if (!results) return games;
+
+  const resultMap = new Map(
+    results.map((result) => [normalizeGameName(result.gameName), result]),
+  );
+
+  return games.map((game) => {
+    const result = resultMap.get(normalizeGameName(game.name));
+    return result
+      ? { ...game, today: result.today, yesterday: result.yesterday }
+      : game;
+  });
+}
+
 export default async function HomePage() {
   const now = new Date();
   const month = new Intl.DateTimeFormat("en-US", {
@@ -128,11 +152,13 @@ export default async function HomePage() {
   const today = `${todayParts.year}-${String(todayParts.month + 1).padStart(2, "0")}-${String(todayParts.day).padStart(2, "0")}`;
 
   // Fetch everything on the server, directly from the data layer (no self-HTTP).
-  const [resultSatta, homepage, chart, adminOverrides] = await Promise.all([
+  const [resultSatta, homepage, chart, adminOverrides, luckySattaResults] =
+    await Promise.all([
     getResultSattaData(),
     getSharedHomepageData(),
     getSatta29Chart(month, year),
     getDailyResultOverridesFromFirestore(today),
+    getLuckySattaDailyResults(now),
   ]);
 
   const games = (resultSatta?.games ?? []).filter(isVisibleGame);
@@ -155,16 +181,19 @@ export default async function HomePage() {
   const nextResults = (homepage?.next ?? []).filter(notInFirst);
   const restResults = (homepage?.rest ?? []).filter(notInFirst);
 
-  // Merge the scraped homepage results (live/next/rest) into the first-section
-  // games so a declared value (e.g. Desawar's 89) is reflected everywhere —
-  // both the Scoreboard spotlight and the ResultBoard read from this merged set.
-  const rawMergedGames = mergeAdminOverrides(
-    mergeHomepageResults(games, [
-      ...liveResults,
-      ...nextResults,
-      ...restResults,
-    ]),
-    adminOverrides,
+  // Build the board from the existing sources, then make Lucky Satta's shared
+  // database authoritative for the markets it owns. Only the result values are
+  // replaced; names, schedules, charts, content, and other markets stay intact.
+  const rawMergedGames = mergeLuckySattaResults(
+    mergeAdminOverrides(
+      mergeHomepageResults(games, [
+        ...liveResults,
+        ...nextResults,
+        ...restResults,
+      ]),
+      adminOverrides,
+    ),
+    luckySattaResults,
   );
   const mergedGames = normalizeResultDays(rawMergedGames, now);
 

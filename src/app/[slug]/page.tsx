@@ -9,6 +9,7 @@ import { YearlyArchive } from "@/components/charts/YearlyArchive";
 import { parseArchiveSlug } from "@/lib/archive-games";
 import { getISTDateParts, isTodayResultDeclared } from "@/lib/utils";
 import { getYearlyChartHistoryFromFirestore } from "@/lib/firebase-cache";
+import { getLuckySattaDailyResults } from "@/lib/lucky-satta-results";
 
 // Revalidate at the edge every 30s, same cadence as the homepage.
 export const revalidate = 30;
@@ -134,6 +135,14 @@ export default async function GameResultPage({
   const charts = await Promise.all(
     monthsToShow.map((m) => getSatta29Chart(m.toLowerCase(), String(year)))
   );
+  const luckySattaResults = await getLuckySattaDailyResults(now);
+  const luckySattaResult = luckySattaResults?.find((result) => {
+    const aliases: Record<string, string> = {
+      desawer: "disawer",
+      ghaziabad: "gaziyabad",
+    };
+    return result.gameKey === (aliases[game.slug] ?? game.slug);
+  });
 
   // grid[monthIndex][date] = value ("" when not declared)
   const grid: Record<number, Record<number, string>> = {};
@@ -163,14 +172,26 @@ export default async function GameResultPage({
   const today = istDate.day;
   const currentMonth = istDate.month;
   
-  const todayEntry =
-    isTodayResultDeclared(game.time, now)
-      ? timeline.find((t) => t.d === today && t.m === currentMonth) ?? null
-      : null;
+  const chartTodayEntry =
+    timeline.find((t) => t.d === today && t.m === currentMonth) ?? null;
+  const todayEntry = isTodayResultDeclared(game.time, now)
+    ? luckySattaResult
+      ? luckySattaResult.today
+        ? { m: currentMonth, d: today, v: luckySattaResult.today }
+        : null
+      : chartTodayEntry
+    : null;
   
-  const yestEntry = todayEntry
-    ? timeline[timeline.length - 2] ?? null
-    : timeline[timeline.length - 1] ?? null;
+  const chartYesterdayEntry = timeline.find(
+    (entry) => entry.m === currentMonth && entry.d === today - 1,
+  );
+  const yestEntry = luckySattaResult
+    ? luckySattaResult.yesterday
+      ? { m: currentMonth, d: today - 1, v: luckySattaResult.yesterday }
+      : null
+    : chartYesterdayEntry ??
+      (todayEntry ? timeline[timeline.length - 2] : timeline[timeline.length - 1]) ??
+      null;
   const todayLabel = todayEntry
     ? `${todayEntry.d} ${MONTHS_ABBR[todayEntry.m]} ${year}`
     : new Intl.DateTimeFormat("en-GB", {
