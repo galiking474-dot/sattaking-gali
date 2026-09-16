@@ -103,17 +103,73 @@ function cleanResult(value: unknown): string {
   return /^\d{1,3}$/.test(result) ? result : "";
 }
 
+function mapDailyResults(
+  documents: LuckySattaResultDocument[],
+  today: string,
+  yesterday: string,
+): LuckySattaDailyResult[] {
+  const values = new Map<string, string>();
+  for (const document of documents) {
+    const game = String(document.game ?? "").toLowerCase();
+    const date = String(document.date ?? "");
+    const result = cleanResult(document.resultNumber);
+    const key = `${game}:${date}`;
+    if (result && !values.has(key)) values.set(key, result);
+  }
+
+  return Object.entries(LUCKY_SATTA_GAME_NAMES).map(
+    ([gameKey, gameName]) => ({
+      gameKey,
+      gameName,
+      today: values.get(`${gameKey}:${today}`) ?? "",
+      yesterday: values.get(`${gameKey}:${yesterday}`) ?? "",
+    }),
+  );
+}
+
+async function getResultsFromPublicApi(
+  today: string,
+  yesterday: string,
+): Promise<LuckySattaDailyResult[]> {
+  const apiUrl = (
+    process.env.LUCKY_SATTA_RESULTS_API_URL ||
+    "https://www.lucky-satta.co/api/results"
+  ).replace(/\/$/, "");
+  const [todayResponse, yesterdayResponse] = await Promise.all([
+    fetch(`${apiUrl}?type=today`, { next: { revalidate: 30 } }),
+    fetch(`${apiUrl}?type=yesterday`, { next: { revalidate: 30 } }),
+  ]);
+
+  if (!todayResponse.ok || !yesterdayResponse.ok) {
+    throw new Error(
+      `Lucky Satta API returned ${todayResponse.status}/${yesterdayResponse.status}`,
+    );
+  }
+
+  const [todayDocuments, yesterdayDocuments] = (await Promise.all([
+    todayResponse.json(),
+    yesterdayResponse.json(),
+  ])) as [LuckySattaResultDocument[], LuckySattaResultDocument[]];
+
+  return mapDailyResults(
+    [...todayDocuments, ...yesterdayDocuments],
+    today,
+    yesterday,
+  );
+}
+
 // Result reads alone use Lucky Satta's MongoDB. All other site data continues
 // to use the existing Firebase and scraper sources.
 export async function getLuckySattaDailyResults(
   now = new Date(),
 ): Promise<LuckySattaDailyResult[] | null> {
+  const today = getISTDate(now);
+  const yesterday = getISTDate(now, -1);
+
   try {
     const connection = await getConnection();
     const database = connection.db;
     if (!database) throw new Error("Lucky Satta MongoDB connection has no database");
-    const today = getISTDate(now);
-    const yesterday = getISTDate(now, -1);
     const documents = await database
       .collection<LuckySattaResultDocument>("results")
       .find({
@@ -123,26 +179,19 @@ export async function getLuckySattaDailyResults(
       .sort({ updatedAt: -1 })
       .toArray();
 
-    const values = new Map<string, string>();
-    for (const document of documents) {
-      const game = String(document.game ?? "").toLowerCase();
-      const date = String(document.date ?? "");
-      const result = cleanResult(document.resultNumber);
-      const key = `${game}:${date}`;
-      if (result && !values.has(key)) values.set(key, result);
-    }
-
-    return Object.entries(LUCKY_SATTA_GAME_NAMES).map(
-      ([gameKey, gameName]) => ({
-        gameKey,
-        gameName,
-        today: values.get(`${gameKey}:${today}`) ?? "",
-        yesterday: values.get(`${gameKey}:${yesterday}`) ?? "",
-      }),
+    return mapDailyResults(documents, today, yesterday);
+  } catch (error) {
+    console.warn(
+      "[lucky-satta-results] Direct database read unavailable; using API:",
+      error instanceof Error ? error.message : error,
     );
+  }
+
+  try {
+    return await getResultsFromPublicApi(today, yesterday);
   } catch (error) {
     console.error(
-      "[lucky-satta-results] Failed to read shared results:",
+      "[lucky-satta-results] Failed to read shared results API:",
       error instanceof Error ? error.message : error,
     );
     return null;
