@@ -648,17 +648,41 @@ function GameRow({
 
 // ─── First Section: ResultSatta Results Board ───
 
+function formatResultDateRange(now: Date): string {
+  const formatter = new Intl.DateTimeFormat("en-GB", {
+    timeZone: "Asia/Kolkata",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
+  const getParts = (date: Date) => {
+    const parts = formatter.formatToParts(date);
+    const value = (type: Intl.DateTimeFormatPartTypes) =>
+      parts.find((part) => part.type === type)?.value ?? "";
+    return {
+      day: value("day"),
+      month: value("month"),
+      year: value("year"),
+    };
+  };
+  const today = getParts(now);
+  const yesterday = getParts(new Date(now.getTime() - 24 * 60 * 60 * 1000));
+
+  if (today.year !== yesterday.year) {
+    return `${yesterday.day} ${yesterday.month} ${yesterday.year} & ${today.day} ${today.month} ${today.year}`;
+  }
+  if (today.month !== yesterday.month) {
+    return `${yesterday.day} ${yesterday.month} & ${today.day} ${today.month} ${today.year}`;
+  }
+  return `${yesterday.day} & ${today.day} ${today.month} ${today.year}`;
+}
+
 function ResultBoard({ games }: { games: GameResult[] }) {
   // `games` is already merged and normalized for the post-midnight rollover.
   const now = new Date();
   const displayGames = games;
 
-  const today = new Intl.DateTimeFormat("en-US", {
-    timeZone: "Asia/Kolkata",
-    month: "long",
-    day: "numeric",
-    year: "numeric",
-  }).format(now);
+  const resultDateRange = formatResultDateRange(now);
 
   return (
     <section>
@@ -666,12 +690,8 @@ function ResultBoard({ games }: { games: GameResult[] }) {
         {/* Title Bar */}
         <div className="bg-white text-black text-center py-3 px-3 border-b-2 border-[#e0850b]">
           <h2 className="text-base md:text-xl font-extrabold uppercase tracking-wide text-black">
-            Satta King Result Chart
-            <span className="inline-block w-2 h-2 bg-[#dc2626] rounded-full animate-live-pulse ml-2 align-middle" />
+            Satta King Results &ndash; {resultDateRange} | Time-Wise Updates
           </h2>
-          <p className="text-[11px] md:text-xs font-semibold text-black">
-            Superfast Satta Results &mdash; {today}
-          </p>
         </div>
 
         {/* Boxes grid */}
