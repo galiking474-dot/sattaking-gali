@@ -19,7 +19,7 @@ import {
   getSharedHomepageData,
 } from "@/lib/api-helpers";
 import {
-  isTodayResultDeclared,
+  isResultDisplayable,
   parseClockTime,
   getISTMinutesOfDay,
   getISTDateParts,
@@ -181,34 +181,25 @@ export default async function HomePage() {
   const nextResults = (homepage?.next ?? []).filter(notInFirst);
   const restResults = (homepage?.rest ?? []).filter(notInFirst);
 
-  // Build the board from the existing sources, then make Lucky Satta's shared
-  // database authoritative for the markets it owns. Only the result values are
-  // replaced; names, schedules, charts, content, and other markets stay intact.
-  const rawMergedGames = mergeLuckySattaResults(
-    mergeAdminOverrides(
-      mergeHomepageResults(games, [
-        ...liveResults,
-        ...nextResults,
-        ...restResults,
-      ]),
-      adminOverrides,
-    ),
+  // Clear potentially stale, undated scraper values first. Date-stamped admin
+  // and Lucky Satta values are merged afterwards so a genuine result published
+  // after midnight (notably Gali) is not erased by the rollover cleanup.
+  const normalizedScrapedGames = normalizeResultDays(
+    mergeHomepageResults(games, [
+      ...liveResults,
+      ...nextResults,
+      ...restResults,
+    ]),
+    now,
+  );
+  const mergedGames = mergeLuckySattaResults(
+    mergeAdminOverrides(normalizedScrapedGames, adminOverrides),
     luckySattaResults,
   );
-  const mergedGames = normalizeResultDays(rawMergedGames, now);
 
   // Scoreboard spotlight — latest declared result + the next awaited game.
   const nowMin = getISTMinutesOfDay(now);
-  const schedulingGames =
-    nowMin < 5 * 60
-      ? rawMergedGames.map((game) => {
-          const gameMinutes = parseClockTime(game.time);
-          return gameMinutes !== null && gameMinutes < 12 * 60
-            ? { ...game, today: "" }
-            : game;
-        })
-      : mergedGames;
-  const timed = schedulingGames
+  const timed = mergedGames
     .map((g) => ({ g, min: parseClockTime(g.time) }))
     .filter((x): x is { g: GameResult; min: number } => x.min !== null);
 
@@ -230,26 +221,18 @@ export default async function HomePage() {
       ? distance
       : distance + 1440;
   };
-  const latestCandidates =
-    nowMin < 5 * 60
-      ? rawMergedGames.filter((game) => {
-          const gameMinutes = parseClockTime(game.time);
-          return gameMinutes !== null && gameMinutes >= 12 * 60 && game.today;
-        })
-      : mergedGames.filter(
-          (game) => isTodayResultDeclared(game.time) && game.today,
-        );
   const latest =
-    latestCandidates
+    mergedGames
+      .filter((game) => isResultDisplayable(game.time, game.today, now))
       .sort(
         (a, b) => (parseClockTime(b.time) ?? 0) - (parseClockTime(a.time) ?? 0),
       )[0] ?? null;
   const upNext =
     timed
-      .filter((x) => !x.g.today)
+      .filter((x) => !isResultDisplayable(x.g.time, x.g.today, now))
       .sort((a, b) => minutesUntil(a.min) - minutesUntil(b.min))[0]?.g ?? null;
   const declaredCount = mergedGames.filter(
-    (g) => isTodayResultDeclared(g.time) && g.today,
+    (game) => isResultDisplayable(game.time, game.today, now),
   ).length;
 
   const updatedAt =
@@ -321,7 +304,7 @@ export default async function HomePage() {
         <AdSlot placement="homepage_top" />
 
         {/* FIRST SECTION — Results board scraped from resultsatta.com */}
-        <ResultBoard games={mergedGames} />
+        <ResultBoard games={mergedGames} now={now} />
 
         {/* Khaiwal / Game Schedule & Contact — directly under the first section */}
         <KhaiwalCard games={schedule} />
@@ -677,9 +660,8 @@ function formatResultDateRange(now: Date): string {
   return `${yesterday.day} & ${today.day} ${today.month} ${today.year}`;
 }
 
-function ResultBoard({ games }: { games: GameResult[] }) {
+function ResultBoard({ games, now }: { games: GameResult[]; now: Date }) {
   // `games` is already merged and normalized for the post-midnight rollover.
-  const now = new Date();
   const displayGames = games;
 
   const resultDateRange = formatResultDateRange(now);
@@ -702,11 +684,12 @@ function ResultBoard({ games }: { games: GameResult[] }) {
         ) : (
           <div className="grid grid-cols-2 gap-2.5 md:gap-4 p-3 md:p-4 bg-[#FFFDF3]">
             {displayGames.map((game, i) => {
-              // The scraped `today` value lingers from the previous day after
-              // midnight. Only trust it once this game's declared time has
-              // actually passed in IST — otherwise it's not out yet.
-              const declared = isTodayResultDeclared(game.time);
-              const showToday = declared && game.today;
+              // The merged value has already passed source-aware rollover checks.
+              const showToday = isResultDisplayable(
+                game.time,
+                game.today,
+                now,
+              );
               return (
                 <GameCard
                   key={game.name + i}

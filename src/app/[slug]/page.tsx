@@ -7,7 +7,7 @@ import { getFeaturedGame, FEATURED_GAMES } from "@/lib/featured-games";
 import { KhaiwalCard } from "@/components/home/KhaiwalCard";
 import { YearlyArchive } from "@/components/charts/YearlyArchive";
 import { parseArchiveSlug } from "@/lib/archive-games";
-import { getISTDateParts, isTodayResultDeclared } from "@/lib/utils";
+import { getISTDateParts, isResultDisplayable } from "@/lib/utils";
 import { getYearlyChartHistoryFromFirestore } from "@/lib/firebase-cache";
 import { getLuckySattaDailyResults } from "@/lib/lucky-satta-results";
 
@@ -174,7 +174,11 @@ export default async function GameResultPage({
   
   const chartTodayEntry =
     timeline.find((t) => t.d === today && t.m === currentMonth) ?? null;
-  const todayEntry = isTodayResultDeclared(game.time, now)
+  const todayEntry = isResultDisplayable(
+    game.time,
+    luckySattaResult?.today ?? chartTodayEntry?.v,
+    now,
+  )
     ? luckySattaResult
       ? luckySattaResult.today
         ? { m: currentMonth, d: today, v: luckySattaResult.today }

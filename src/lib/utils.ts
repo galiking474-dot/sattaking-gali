@@ -84,10 +84,31 @@ export function isTodayResultDeclared(
   return getISTMinutesOfDay(now) >= declaredAt;
 }
 
-// The source keeps the just-finished day's values in its `today` column after
-// midnight. Gali is commonly announced in this window, so until the morning
-// rollover finishes that value belongs under Yesterday, never Today. Normalize
-// once before deriving the hero, counts, or result cards so every section agrees.
+// A late evening result published after midnight is still part of the active
+// result cycle. Call this only after stale, undated source values are removed.
+export function isResultDisplayable(
+  gameTime: string,
+  result: string | null | undefined,
+  now: Date = new Date()
+): boolean {
+  if (!result) return false;
+
+  const nowMinutes = getISTMinutesOfDay(now);
+  const gameMinutes = parseClockTime(gameTime);
+  if (
+    nowMinutes < 5 * 60 &&
+    gameMinutes !== null &&
+    gameMinutes >= 12 * 60
+  ) {
+    return true;
+  }
+
+  return isTodayResultDeclared(gameTime, now);
+}
+
+// Undated scraper sources keep the just-finished day's values in their `today`
+// column after midnight. Move those values before merging date-aware sources;
+// a genuinely new late result can then be restored without reviving stale data.
 export function normalizeResultDay(
   game: GameResult,
   now: Date = new Date()
