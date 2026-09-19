@@ -8,6 +8,12 @@ export const metadata: Metadata = {
   description:
     "Read guides on Satta King results, today satta result updates, chart history and safe tips. Stay informed with organized daily records and market information.",
   alternates: { canonical: "/blog" },
+  openGraph: {
+    title: "Satta King Blog — Result and Chart Guides",
+    description: "Practical guides to result schedules, historical records and chart navigation.",
+    url: "/blog",
+    type: "website",
+  },
 };
 
 function formatDate(iso: string) {

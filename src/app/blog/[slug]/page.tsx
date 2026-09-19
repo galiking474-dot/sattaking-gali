@@ -3,6 +3,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { FiCalendar, FiClock, FiChevronLeft } from "react-icons/fi";
 import { getAllPosts, getPostBySlug, type BlogBlock } from "@/lib/blog-data";
+import { JsonLd } from "@/components/seo/JsonLd";
+import { SITE_URL } from "@/lib/site";
 
 export function generateStaticParams() {
   return getAllPosts().map((post) => ({ slug: post.slug }));
@@ -24,12 +26,15 @@ export async function generateMetadata({
     title: post.metaTitle,
     description: post.metaDescription,
     alternates: {
-      canonical: `https://sattaking-gali.com/blog/${post.slug}`,
+      canonical: `/blog/${post.slug}`,
     },
     openGraph: {
       title: post.metaTitle,
       description: post.metaDescription,
       type: "article",
+      url: `/blog/${post.slug}`,
+      publishedTime: post.date,
+      authors: ["SattaKing-Gali Editorial Team"],
     },
   };
 }
@@ -89,8 +94,51 @@ export default async function BlogDetailPage({
     notFound();
   }
 
+  const postUrl = `${SITE_URL}/blog/${post.slug}`;
+  const faqItems = post.body.flatMap((block) =>
+    block.type === "faq" ? block.items : [],
+  );
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Article",
+        headline: post.title,
+        description: post.metaDescription,
+        datePublished: post.date,
+        dateModified: post.date,
+        mainEntityOfPage: postUrl,
+        author: { "@type": "Organization", name: "SattaKing-Gali Editorial Team" },
+        publisher: { "@id": `${SITE_URL}/#organization` },
+        inLanguage: "en-IN",
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Home", item: `${SITE_URL}/` },
+          { "@type": "ListItem", position: 2, name: "Blog", item: `${SITE_URL}/blog` },
+          { "@type": "ListItem", position: 3, name: post.title, item: postUrl },
+        ],
+      },
+      ...(faqItems.length
+        ? [
+            {
+              "@type": "FAQPage",
+              mainEntity: faqItems.map((item) => ({
+                "@type": "Question",
+                name: item.q,
+                acceptedAnswer: { "@type": "Answer", text: item.a },
+              })),
+            },
+          ]
+        : []),
+    ],
+  };
+  const relatedPosts = getAllPosts().filter((item) => item.slug !== post.slug).slice(0, 2);
+
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
+      <JsonLd data={jsonLd} />
       <Link
         href="/blog"
         className="inline-flex items-center gap-1 text-sm font-semibold text-[#e63946] hover:underline mb-5"
@@ -139,6 +187,23 @@ export default async function BlogDetailPage({
             View Chart Records
           </Link>
         </div>
+
+        {relatedPosts.length > 0 && (
+          <section className="mt-8 border-t border-gray-200 pt-6" aria-labelledby="related-guides">
+            <h2 id="related-guides" className="text-lg font-bold text-[#1e3a5f]">
+              Related guides
+            </h2>
+            <ul className="mt-3 space-y-2">
+              {relatedPosts.map((related) => (
+                <li key={related.slug}>
+                  <Link href={`/blog/${related.slug}`} className="font-semibold text-[#a5370c] hover:underline">
+                    {related.title}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
       </article>
     </div>
   );

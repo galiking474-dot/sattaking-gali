@@ -11,9 +11,9 @@ export function Footer() {
               SATTA<span className="text-[#f5b301]">KING</span><span className="text-[#c4b5fd]">GALI</span>
             </h3>
             <p className="text-sm leading-relaxed">
-              SattaKing-Gali.com is India&apos;s trusted platform for superfast live Satta King results.
-              Get instant updates for Gali, Desawar, Ghaziabad, Faridabad, Shri Ganesh, Delhi Bazar
-              and 100+ games with complete monthly chart records.
+              SattaKing-Gali.com organizes the latest available game-wise results,
+              expected times and historical records for Gali, Desawar, Ghaziabad,
+              Faridabad, Shri Ganesh, Delhi Bazar and other listed markets.
             </p>
           </div>
 
@@ -27,8 +27,18 @@ export function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/result-timings" className="hover:text-white transition-colors">
+                  Daily Result Timings
+                </Link>
+              </li>
+              <li>
                 <Link href="/charts" className="hover:text-white transition-colors">
                   Satta King Chart Records
+                </Link>
+              </li>
+              <li>
+                <Link href="/blog" className="hover:text-white transition-colors">
+                  Result Guides &amp; Updates
                 </Link>
               </li>
               <li>

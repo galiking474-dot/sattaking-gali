@@ -124,7 +124,8 @@ export default function ContactPage() {
               Chat on WhatsApp
             </h2>
             <p className="text-sm text-gray-600 mb-4">
-              Get instant replies on WhatsApp. We&apos;re available 24/7.
+              Send a website question or report an incorrect result, market name
+              or schedule. Replies are provided as availability allows.
             </p>
             <a
               href={getWhatsAppLink(whatsappNumber, "SUNNY BHAI")}
@@ -140,13 +141,16 @@ export default function ContactPage() {
             <h2 className="text-lg font-bold text-gray-800 mb-3">Quick Info</h2>
             <div className="space-y-3 text-sm text-gray-600">
               <p>
-                <strong>Response Time:</strong> We typically respond within 1 hour.
+                <strong>Correction reports:</strong> Include the page URL, market
+                name, date and the value you believe needs review.
               </p>
               <p>
-                <strong>Support Hours:</strong> 24/7 available on WhatsApp.
+                <strong>Result status:</strong> Please check the relevant result
+                page first; delayed announcements remain marked as pending.
               </p>
               <p>
-                <strong>Email:</strong> support@sattaresult.com
+                <strong>Privacy:</strong> Do not send payment details, passwords
+                or other sensitive information through this form.
               </p>
             </div>
           </div>

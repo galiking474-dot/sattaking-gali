@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FiHome, FiMessageCircle, FiBarChart2 } from "react-icons/fi";
+import { FiHome, FiMessageCircle, FiBarChart2, FiClock } from "react-icons/fi";
 import { FaCrown } from "react-icons/fa";
 import { GiLion } from "react-icons/gi";
 
 const NAV_LINKS = [
   { href: "/", label: "Home", icon: FiHome },
+  { href: "/result-timings", label: "Timings", icon: FiClock },
   { href: "/charts", label: "Charts", icon: FiBarChart2 },
   { href: "/contact", label: "Contact", icon: FiMessageCircle },
 ];
@@ -66,7 +67,7 @@ export function Header() {
         </div>
 
         {/* Mobile nav — always-visible buttons below the brand */}
-        <nav className="md:hidden grid grid-cols-3 gap-2 pb-3">
+        <nav className="md:hidden grid grid-cols-4 gap-1.5 pb-3">
           {NAV_LINKS.map((link) => {
             const Icon = link.icon;
             const active = isActive(link.href);
@@ -91,7 +92,7 @@ export function Header() {
       {/* Marquee */}
       <div className="text-[#a5370c] py-1 overflow-hidden w-full border-t border-[#f0e2a6]">
         <div className="animate-marquee whitespace-nowrap text-[10px] md:text-xs font-bold">
-SattaKing-Gali.com par paayein sabse tez Satta King result &bull; Desawar, Faridabad, Ghaziabad, Gali, Shri Ganesh &amp; Delhi Bazar &bull; 100+ market &bull; free monthly chart record &bull; har minute live update
+Latest available Satta King results &bull; Desawar, Faridabad, Ghaziabad, Gali, Shri Ganesh &amp; Delhi Bazar &bull; Daily schedules &bull; Monthly and yearly chart records
         </div>
       </div>
     </header>

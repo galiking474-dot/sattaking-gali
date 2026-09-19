@@ -10,6 +10,8 @@ import { parseArchiveSlug } from "@/lib/archive-games";
 import { getISTDateParts, isResultDisplayable } from "@/lib/utils";
 import { getYearlyChartHistoryFromFirestore } from "@/lib/firebase-cache";
 import { getLuckySattaDailyResults } from "@/lib/lucky-satta-results";
+import { JsonLd } from "@/components/seo/JsonLd";
+import { SITE_URL } from "@/lib/site";
 
 // Revalidate at the edge every 30s, same cadence as the homepage.
 export const revalidate = 30;
@@ -79,7 +81,8 @@ export async function generateMetadata({
     title: { absolute: title },
     description,
     alternates: { canonical: `/${slug}` },
-    openGraph: { title, description, type: "website" },
+    openGraph: { title, description, url: `/${slug}`, type: "website" },
+    twitter: { card: "summary", title, description },
   };
 }
 
@@ -204,9 +207,41 @@ export default async function GameResultPage({
         month: "short",
         year: "numeric",
       }).format(now);
+  const pageUrl = `${SITE_URL}/${slug}`;
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebPage",
+        name: `${game.name} Satta King Result Today`,
+        url: pageUrl,
+        description: game.blurb,
+        isPartOf: { "@id": `${SITE_URL}/#website` },
+        dateModified: new Intl.DateTimeFormat("en-CA", {
+          timeZone: "Asia/Kolkata",
+          year: "numeric",
+          month: "2-digit",
+          day: "2-digit",
+        }).format(now),
+      },
+      {
+        "@type": "BreadcrumbList",
+        itemListElement: [
+          { "@type": "ListItem", position: 1, name: "Home", item: `${SITE_URL}/` },
+          { "@type": "ListItem", position: 2, name: `${game.name} Result`, item: pageUrl },
+        ],
+      },
+    ],
+  };
 
   return (
     <div className="max-w-4xl mx-auto px-2 sm:px-3 md:px-6 py-4 md:py-6 space-y-6 md:space-y-8">
+      <JsonLd data={jsonLd} />
+      <nav aria-label="Breadcrumb" className="text-sm text-[#7a5a1a]">
+        <Link href="/" className="font-bold hover:underline">Home</Link>
+        <span aria-hidden="true"> / </span>
+        <span>{game.name} Result</span>
+      </nav>
       {/* Breadcrumb / other markets */}
       <div className="flex flex-wrap items-center justify-center gap-2">
         {FEATURED_GAMES.map((g) => (

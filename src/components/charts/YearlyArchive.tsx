@@ -3,6 +3,7 @@ import type { ArchiveGame } from "@/lib/archive-games";
 import { ARCHIVE_YEARS, getArchivePath } from "@/lib/archive-games";
 import type { MonthlyChartData } from "@/lib/types";
 import type { FirebaseArchiveRecord } from "@/lib/firebase-cache";
+import { SITE_URL } from "@/lib/site";
 
 const MONTHS = [
   "JAN",
@@ -65,7 +66,7 @@ export function YearlyArchive({
       count + [...month.values()].filter((result) => result !== "-").length,
     0
   );
-  const pageUrl = `https://sattaking-gali.com/${game.slug}-yearly-chart-${year}`;
+  const pageUrl = `${SITE_URL}/${game.slug}-yearly-chart-${year}`;
   const structuredData = {
     "@context": "https://schema.org",
     "@graph": [
@@ -81,8 +82,8 @@ export function YearlyArchive({
       {
         "@type": "BreadcrumbList",
         itemListElement: [
-          { "@type": "ListItem", position: 1, name: "Home", item: "https://sattaking-gali.com/" },
-          { "@type": "ListItem", position: 2, name: "Charts", item: "https://sattaking-gali.com/charts" },
+          { "@type": "ListItem", position: 1, name: "Home", item: `${SITE_URL}/` },
+          { "@type": "ListItem", position: 2, name: "Charts", item: `${SITE_URL}/charts` },
           { "@type": "ListItem", position: 3, name: `${game.name} ${year}`, item: pageUrl },
         ],
       },

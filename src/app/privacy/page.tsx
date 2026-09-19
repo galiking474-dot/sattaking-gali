@@ -2,8 +2,14 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
-  description: "Privacy policy for Satta Result website.",
+  description: "Read how SattaKing-Gali handles contact details, cookies, analytics, advertising services and data security.",
   alternates: { canonical: "/privacy" },
+  openGraph: {
+    title: "Privacy Policy",
+    description: "How SattaKing-Gali handles contact information, cookies and third-party services.",
+    url: "/privacy",
+    type: "website",
+  },
 };
 
 export default function PrivacyPage() {

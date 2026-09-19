@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { SITE_URL } from "@/lib/site";
 
 // Custom meta descriptions per game chart slug.
 const CHART_DESCRIPTIONS: Record<string, string> = {
@@ -66,7 +67,7 @@ export async function generateMetadata({
   const description =
     CHART_DESCRIPTIONS[gameCode] ??
     `Check the latest ${gameName} Satta King chart with today's result, old records, previous winning numbers, and complete historical data.`;
-  const url = `https://sattaking-gali.com/chart/${gameCode}`;
+  const url = `${SITE_URL}/chart/${gameCode}`;
 
   return {
     title: { absolute: title },

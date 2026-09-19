@@ -2,8 +2,14 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Disclaimer",
-  description: "Disclaimer for Satta Result website.",
+  description: "Read the SattaKing-Gali disclaimer covering informational use, result accuracy, external sources and user responsibility.",
   alternates: { canonical: "/disclaimer" },
+  openGraph: {
+    title: "Website Disclaimer",
+    description: "Important information about result accuracy, external sources and responsible use.",
+    url: "/disclaimer",
+    type: "website",
+  },
 };
 
 export default function DisclaimerPage() {

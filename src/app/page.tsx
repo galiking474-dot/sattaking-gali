@@ -36,6 +36,8 @@ import {
   getLuckySattaDailyResults,
   type LuckySattaDailyResult,
 } from "@/lib/lucky-satta-results";
+import { JsonLd } from "@/components/seo/JsonLd";
+import { SITE_URL } from "@/lib/site";
 
 // Server-render the page and revalidate at most once every 30s. The results board
 // + charts are cached at the edge, so a traffic spike triggers at most one
@@ -75,6 +77,33 @@ const HIDDEN_GAME_NAMES = new Set(
     "Fateabad",
   ].map(normalizeGameName),
 );
+
+const HOME_FAQS: Array<[string, string]> = [
+  [
+    "Where can I check today's Satta King results?",
+    "Use the homepage result board or open a dedicated market page to see the latest available update and its scheduled time.",
+  ],
+  [
+    "Where can I check the Gali result?",
+    "Open the dedicated Gali result page for the latest available value, expected time and current-year chart.",
+  ],
+  [
+    "Are Desawar and Disawar the same market name?",
+    "Disawar is a common alternate spelling used for Desawar. The site connects both spellings to the same market information.",
+  ],
+  [
+    "Where can I browse old result charts?",
+    "The Charts section contains monthly tables and links to game-specific yearly archives.",
+  ],
+  [
+    "Can historical charts predict a future result?",
+    "No. Historical charts document past records only and cannot guarantee or predict a future result.",
+  ],
+  [
+    "Why can a result appear after its scheduled time?",
+    "The listed time is the usual publication time. Source announcements can be delayed, so a market remains pending until a value is available.",
+  ],
+];
 
 function isVisibleGame(game: GameResult): boolean {
   const name = normalizeGameName(game.name);
@@ -221,12 +250,30 @@ export default async function HomePage() {
       ? distance
       : distance + 1440;
   };
-  const latest =
+  const latestToday =
     mergedGames
       .filter((game) => isResultDisplayable(game.time, game.today, now))
       .sort(
         (a, b) => (parseClockTime(b.time) ?? 0) - (parseClockTime(a.time) ?? 0),
       )[0] ?? null;
+  // Before today's first declaration, keep the spotlight useful by showing the
+  // last result from the completed day. Sorting by the scheduled clock time
+  // makes the late-night Gali result the fallback instead of an empty state.
+  const latestPrevious =
+    mergedGames
+      .filter((game) => Boolean(game.yesterday))
+      .sort(
+        (a, b) => (parseClockTime(b.time) ?? 0) - (parseClockTime(a.time) ?? 0),
+      )[0] ?? null;
+  const latest = latestToday
+    ? { game: latestToday, value: latestToday.today, isPrevious: false }
+    : latestPrevious
+      ? {
+          game: latestPrevious,
+          value: latestPrevious.yesterday,
+          isPrevious: true,
+        }
+      : null;
   const upNext =
     timed
       .filter((x) => !isResultDisplayable(x.g.time, x.g.today, now))
@@ -249,9 +296,34 @@ export default async function HomePage() {
 
   const schedule =
     games.length > 0 ? games.map((g) => ({ name: g.name, time: g.time })) : [];
+  const homeJsonLd = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebPage",
+        "@id": `${SITE_URL}/#webpage`,
+        url: `${SITE_URL}/`,
+        name: `Satta King Result Today ${year}`,
+        description:
+          "Latest available game-wise results, scheduled times and historical chart records.",
+        isPartOf: { "@id": `${SITE_URL}/#website` },
+        dateModified: today,
+        inLanguage: "en-IN",
+      },
+      {
+        "@type": "FAQPage",
+        mainEntity: HOME_FAQS.map(([question, answer]) => ({
+          "@type": "Question",
+          name: question,
+          acceptedAnswer: { "@type": "Answer", text: answer },
+        })),
+      },
+    ],
+  };
 
   return (
     <ScrollAnimator>
+      <JsonLd data={homeJsonLd} />
       <WhatsAppModal />
 
       {/* Hero */}
@@ -399,7 +471,11 @@ function Scoreboard({
   total,
   declared,
 }: {
-  latest: GameResult | null;
+  latest: {
+    game: GameResult;
+    value: string;
+    isPrevious: boolean;
+  } | null;
   upNext: GameResult | null;
   total: number;
   declared: number;
@@ -461,14 +537,15 @@ function Scoreboard({
               <div className="relative mt-3 flex items-center justify-between gap-3">
                 <div className="min-w-0">
                   <p className="text-white font-extrabold text-2xl md:text-4xl uppercase truncate drop-shadow-[0_2px_6px_rgba(0,0,0,0.5)]">
-                    {latest.name}
+                    {latest.game.name}
                   </p>
                   <p className="text-[#FCE38A] text-xs md:text-sm font-semibold mt-1">
-                    {latest.time}
+                    {latest.isPrevious && "Previous result · "}
+                    {latest.game.time}
                   </p>
                 </div>
                 <div className="shrink-0 bg-white text-[#dc2626] font-extrabold font-mono text-5xl md:text-7xl rounded-2xl px-5 md:px-7 py-1.5 md:py-2 animate-result-glow leading-none">
-                  {latest.today}
+                  {latest.value}
                 </div>
               </div>
             ) : (
@@ -849,15 +926,15 @@ function CombinedResults({ groups }: { groups: ResultGroup[] }) {
   );
 }
 
-// ─── Keyword Buttons Section (SEO) ───
+// ─── Useful internal navigation ───
 
-const KEYWORD_BUTTONS = [
-  "Play Bazaar",
-  "Satta King 786",
-  "Satta King Fast",
-  "Satta King UP",
-  "Delhi Satta King",
-  "Black Satta King",
+const QUICK_RESOURCES = [
+  { label: "Daily Result Timings", href: "/result-timings" },
+  { label: "Monthly Charts", href: "/charts" },
+  { label: "Gali Result", href: "/gali-result" },
+  { label: "Desawar Result", href: "/desawer-result" },
+  { label: "Ghaziabad Result", href: "/ghaziabad-result" },
+  { label: "Result Guides", href: "/blog" },
 ];
 
 function KeywordButtons({ monthYear }: { monthYear: string }) {
@@ -873,13 +950,13 @@ function KeywordButtons({ monthYear }: { monthYear: string }) {
 
       {/* Keyword grid — 2 per row */}
       <div className="grid grid-cols-2 gap-3 md:gap-4">
-        {KEYWORD_BUTTONS.map((kw) => (
+        {QUICK_RESOURCES.map((resource) => (
           <Link
-            key={kw}
-            href="/#top"
+            key={resource.href}
+            href={resource.href}
             className="text-center bg-gradient-to-b from-[#FFD93B] to-[#d4a017] text-[#3a1d00] font-extrabold text-xs sm:text-sm md:text-lg py-3.5 md:py-4 rounded-xl border-2 border-[#e0850b] shadow-sm hover:brightness-105 transition-all"
           >
-            {kw}
+            {resource.label}
           </Link>
         ))}
       </div>
@@ -910,8 +987,6 @@ function SeoContent() {
     "Delhi Bazar Chart",
     "Shree Ganesh Chart",
   ];
-  const moreGames =
-    "Delhi Jaipur, Gali Disawar Mix, Delhi King, Bhagya Lakshmi, Akash Ganga, Delhi 6, Delhi City, Meerut Metro, Meerut City, Royal Challenge, Taj, Super Bazar, Chand Tara, Shiv Shakti, Maharaj, Old City, Paras, Shiv Shankar, Gali Bazar, UP Bazar, Bombay Super, Gold Bazar, Rozana, New Ghaziabad, New Gali, Super Delhi, Delhi Dream, Royal King, Maa Bhagwati, Dubai Delhi, VIP King, Bikaner Super, Chotta Bazar, Shri Laxmi, Delhi Golden, Dhan Kuber, Bhavishyavani, Shri Ji, New Punjab, Super King, Matka Sone Ka, Agra Bazar, Bihar King, Mumbai Bazaar, Shree Ganga Nagar, Jaipur King, Kalka Bazar, Savera, Moti City, Ghaziabad Night, Delhi Evening, Choti Gali, Deep Sagar, Super Taj, New Taj, Super Savera, MG Prime, Mahalaxmi Bazar, Noida King, Veera King, Farida Bazar, New Sahibabad, Royal Bazar, Gaj Kesri, Rajdhani Jaipur, Janta City, JD Durga, Bala Ji Dadri, Delhi Bazar Day, and Udaan King.";
   const marketSections: Array<{
     title: string;
     paragraphs: string[];
@@ -1140,68 +1215,23 @@ function SeoContent() {
       ],
     },
   ];
-  const faqs = [
-    [
-      "Where can I check Satta King Result Today 2026?",
-      "You can check the latest available Satta King Result 2026 from the dedicated result sections on SattaKing-Gali.com. Select your preferred game to view the latest update.",
-    ],
-    [
-      "Which website provides fast Satta Result updates?",
-      "SattaKing-Gali.com organizes different Satta markets separately so users can quickly find available result updates without searching multiple pages.",
-    ],
-    [
-      "Where can I check Gali Satta King Result Today?",
-      "You can visit the Gali Satta King section to check the latest available Gali Result, Gali Chart 2026, and previous records.",
-    ],
-    [
-      "How can I check Desawar Result 2026?",
-      "Open the Desawar/Disawar result section to view available Desawar results and previous chart records.",
-    ],
-    [
-      "Are Desawar and Disawar the same game?",
-      "Yes, many users search Desawar using different spellings like Disawar. Both keywords refer to the same commonly searched market.",
-    ],
-    [
-      "Where can I find the Faridabad Satta Result and Chart?",
-      "You can check the Faridabad section for available Faridabad Result updates, charts, and previous records.",
-    ],
-    [
-      "Can I check old Satta King charts?",
-      "Yes, available record chart sections allow users to browse previous Satta King records by game.",
-    ],
-    [
-      "Are Satta King charts used to predict future results?",
-      "No. Satta charts only display historical records and previous results. They cannot guarantee or predict future outcomes.",
-    ],
-    [
-      "How often are Satta results updated?",
-      "Result availability depends on each individual market. Users should check the relevant game section for the latest available update.",
-    ],
-    [
-      "Why should I use SattaKing-Gali.com for results?",
-      "The website provides a simple game-wise structure where users can quickly find different Satta results, charts, and previous records from one place.",
-    ],
-  ];
+  const faqs = HOME_FAQS;
 
   return (
-    <article className="sa opacity-0 translate-y-8 bg-white rounded-xl border border-[#f0e2a6] p-4 md:p-8 text-sm md:text-base text-gray-700 leading-relaxed shadow-sm">
+    <article className="bg-white rounded-xl border border-[#f0e2a6] p-4 md:p-8 text-sm md:text-base text-gray-700 leading-relaxed shadow-sm">
       <section className="space-y-3">
         <div className="mb-5 space-y-3 leading-relaxed">
           <p>
-            Check today&apos;s Satta King Result faster with updated game-wise
-            charts, previous records, and latest information. SattaKing-Gali.com
-            provides a simple way to find Gali, Desawar, Faridabad, Ghaziabad,
-            Delhi Bazar, Shree Ganesh and other popular Satta results in one
-            place.
+            Check the latest available result by market, then open its chart to
+            review earlier records. SattaKing-Gali.com organizes Gali, Desawar,
+            Faridabad, Ghaziabad, Delhi Bazar and Shree Ganesh information in a
+            consistent game-wise format.
           </p>
           <p>
-            Searching for <strong>&quot;Satta King Result Today&quot;</strong>,{" "}
-            <strong>&quot;Satta Result 2026&quot;</strong>,{" "}
-            <strong>&quot;Gali Result&quot;</strong>,{" "}
-            <strong>&quot;Desawar Result&quot;</strong> or{" "}
-            <strong>&quot;Satta Chart 2026&quot;</strong>? Here you can easily
-            find the latest available updates with separate sections for every
-            game.
+            Each result page identifies the usual publication time, today&apos;s
+            status and the previous available value. The chart pages separate
+            monthly and yearly records so a missing entry is not confused with a
+            declared result.
           </p>
           <p>
             No confusion, no mixed results simply select your preferred game and
@@ -1210,7 +1240,7 @@ function SeoContent() {
           </p>
         </div>
         <h2 className="text-xl md:text-2xl font-extrabold text-[#a5370c]">
-          Super Fast Satta Result Updates – All Games in One Place
+          Game-wise Result Updates in One Place
         </h2>
         <p>
           Finding the correct Satta result at the right time is important. Our
@@ -1255,7 +1285,7 @@ function SeoContent() {
         </p>
       </section>
 
-      {marketSections.map((section) => (
+      {marketSections.slice(0, 7).map((section) => (
         <section key={section.title} className="mt-8 space-y-3">
           <h2 className="text-xl font-bold text-[#a5370c]">{section.title}</h2>
           {section.paragraphs.map((paragraph) => (
@@ -1271,22 +1301,6 @@ function SeoContent() {
           {section.outro && <p>{section.outro}</p>}
         </section>
       ))}
-
-      <section className="mt-8 space-y-3">
-        <h2 className="text-xl font-bold text-[#a5370c]">
-          More Satta Result Games &amp; Latest Chart Updates
-        </h2>
-        <p>
-          Looking for more Satta result updates? SattaKing-Gali.com also
-          provides information for many other popular markets and game sections.
-        </p>
-        <p>You can explore different game names such as {moreGames}</p>
-        <p>
-          Each game section is arranged separately so you can easily find the
-          related result updates and chart information for the market you want
-          to check.
-        </p>
-      </section>
 
       <section className="mt-8 space-y-3">
         <h2 className="text-xl font-bold text-[#a5370c]">

@@ -1,63 +1,63 @@
-import { MetadataRoute } from "next";
-import { getResultSattaData } from "@/lib/api-helpers";
+import type { MetadataRoute } from "next";
 import { FEATURED_GAMES } from "@/lib/featured-games";
-import { ARCHIVE_GAMES, ARCHIVE_YEARS, getArchivePath } from "@/lib/archive-games";
+import {
+  ARCHIVE_GAMES,
+  ARCHIVE_YEARS,
+  getArchivePath,
+} from "@/lib/archive-games";
 import { getAllPosts } from "@/lib/blog-data";
+import { absoluteUrl } from "@/lib/site";
 
-const BASE_URL = "https://sattaking-gali.com";
+const CONTENT_UPDATED = new Date("2026-09-19T00:00:00+05:30");
+const LEGAL_UPDATED = new Date("2026-05-01T00:00:00+05:30");
 
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const resultSatta = await getResultSattaData();
-  const blogPosts = getAllPosts();
-
-  // Build chart URLs from the live first-section game list.
-  const uniqueSlugs = [
-    ...new Set(
-      (resultSatta?.games || []).map((g) =>
-        g.name.toLowerCase().replace(/\s+/g, "-")
-      )
-    ),
-  ];
-
+export default function sitemap(): MetadataRoute.Sitemap {
+  const istDate = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Kolkata",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
+  const dailyUpdated = new Date(`${istDate}T00:00:00+05:30`);
   const staticRoutes: MetadataRoute.Sitemap = [
-    { url: BASE_URL, lastModified: new Date(), changeFrequency: "daily", priority: 1 },
-    { url: `${BASE_URL}/charts`, lastModified: new Date(), changeFrequency: "daily", priority: 0.9 },
-    { url: `${BASE_URL}/about`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.5 },
-    { url: `${BASE_URL}/contact`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.5 },
-    { url: `${BASE_URL}/blog`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.6 },
-    { url: `${BASE_URL}/disclaimer`, lastModified: new Date(), changeFrequency: "yearly", priority: 0.3 },
-    { url: `${BASE_URL}/privacy`, lastModified: new Date(), changeFrequency: "yearly", priority: 0.3 },
+    { url: absoluteUrl("/"), lastModified: dailyUpdated, changeFrequency: "daily", priority: 1 },
+    { url: absoluteUrl("/charts"), lastModified: dailyUpdated, changeFrequency: "daily", priority: 0.9 },
+    { url: absoluteUrl("/result-timings"), lastModified: CONTENT_UPDATED, changeFrequency: "monthly", priority: 0.8 },
+    { url: absoluteUrl("/blog"), lastModified: CONTENT_UPDATED, changeFrequency: "monthly", priority: 0.7 },
+    { url: absoluteUrl("/about"), lastModified: CONTENT_UPDATED, changeFrequency: "monthly", priority: 0.5 },
+    { url: absoluteUrl("/contact"), lastModified: CONTENT_UPDATED, changeFrequency: "yearly", priority: 0.4 },
+    { url: absoluteUrl("/disclaimer"), lastModified: LEGAL_UPDATED, changeFrequency: "yearly", priority: 0.3 },
+    { url: absoluteUrl("/privacy"), lastModified: LEGAL_UPDATED, changeFrequency: "yearly", priority: 0.3 },
   ];
 
   return [
     ...staticRoutes,
-    // Featured market landing pages (result + yearly chart + Khaiwal + SEO).
-    ...FEATURED_GAMES.map((g) => ({
-      url: `${BASE_URL}/${g.slug}-result`,
-      lastModified: new Date(),
+    ...FEATURED_GAMES.map((game) => ({
+      url: absoluteUrl(`/${game.slug}-result`),
+      lastModified: dailyUpdated,
       changeFrequency: "daily" as const,
       priority: 0.9,
     })),
-    ...blogPosts.map((post) => ({
-      url: `${BASE_URL}/blog/${post.slug}`,
-      lastModified: new Date(post.date),
+    ...ARCHIVE_GAMES.map((game) => ({
+      url: absoluteUrl(`/chart/${game.slug}`),
+      lastModified: dailyUpdated,
+      changeFrequency: "daily" as const,
+      priority: 0.75,
+    })),
+    ...getAllPosts().map((post) => ({
+      url: absoluteUrl(`/blog/${post.slug}`),
+      lastModified: new Date(`${post.date}T00:00:00+05:30`),
       changeFrequency: "monthly" as const,
-      priority: 0.6,
+      priority: 0.65,
     })),
     ...ARCHIVE_GAMES.flatMap((game) =>
       ARCHIVE_YEARS.map((year) => ({
-        url: `${BASE_URL}${getArchivePath(game.slug, year)}`,
+        url: absoluteUrl(getArchivePath(game.slug, year)),
         lastModified:
-          year === 2026 ? new Date() : new Date(`${year}-12-31T00:00:00Z`),
-        changeFrequency: "yearly" as const,
-        priority: year === 2026 ? 0.8 : 0.65,
-      }))
+          year === 2026 ? dailyUpdated : new Date(`${year}-12-31T00:00:00Z`),
+        changeFrequency: year === 2026 ? ("monthly" as const) : ("yearly" as const),
+        priority: year === 2026 ? 0.8 : 0.6,
+      })),
     ),
-    ...uniqueSlugs.map((slug) => ({
-      url: `${BASE_URL}/chart/${slug}`,
-      lastModified: new Date(),
-      changeFrequency: "daily" as const,
-      priority: 0.8,
-    })),
   ];
 }
