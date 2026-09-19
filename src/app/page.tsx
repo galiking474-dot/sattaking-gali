@@ -232,24 +232,9 @@ export default async function HomePage() {
     .map((g) => ({ g, min: parseClockTime(g.time) }))
     .filter((x): x is { g: GameResult; min: number } => x.min !== null);
 
-  // Next game = the earliest game (in daily schedule order) whose result has
-  // NOT been declared yet. It stays on that game until its result actually
-  // arrives — even if its declared time has already passed (result running
-  // late) — instead of jumping ahead on the clock. Early-morning games (e.g.
-  // Desawar ~05 AM) belong at the end of the cycle, so shift them past midnight.
-  const MORNING_CUTOFF = 12 * 60;
-  const scheduleMin = (min: number) =>
-    min < MORNING_CUTOFF ? min + 1440 : min;
-  const operationalNow = scheduleMin(nowMin);
-  const RESULT_DELAY_GRACE_MINUTES = 180;
-  const minutesUntil = (min: number) => {
-    const distance = scheduleMin(min) - operationalNow;
-    // Keep a recently-passed game at the front while its result is delayed.
-    // Once the grace window has elapsed, treat it as the next day's game.
-    return distance >= -RESULT_DELAY_GRACE_MINUTES
-      ? distance
-      : distance + 1440;
-  };
+  // Next game is driven by its scheduled IST time. Measure forward around a
+  // full day so the schedule rolls from Gali at night to Disawar in the morning.
+  const minutesUntil = (min: number) => (min - nowMin + 1440) % 1440;
   const latestToday =
     mergedGames
       .filter((game) => isResultDisplayable(game.time, game.today, now))
@@ -275,9 +260,8 @@ export default async function HomePage() {
         }
       : null;
   const upNext =
-    timed
-      .filter((x) => !isResultDisplayable(x.g.time, x.g.today, now))
-      .sort((a, b) => minutesUntil(a.min) - minutesUntil(b.min))[0]?.g ?? null;
+    timed.sort((a, b) => minutesUntil(a.min) - minutesUntil(b.min))[0]?.g ??
+    null;
   const declaredCount = mergedGames.filter(
     (game) => isResultDisplayable(game.time, game.today, now),
   ).length;
