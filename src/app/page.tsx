@@ -1,7 +1,7 @@
 import { Fragment } from "react";
 import { AdSlot } from "@/components/layout/AdSlot";
 import Link from "next/link";
-import { WhatsAppModal } from "@/components/layout/WhatsAppModal";
+import { WhatsAppButton } from "@/components/layout/WhatsAppButton";
 import { WhatsAppChannelBanner } from "@/components/layout/WhatsAppChannelBanner";
 import { MonthlyChartSection } from "@/components/home/MonthlyChartSection";
 import { KhaiwalCard } from "@/components/home/KhaiwalCard";
@@ -308,8 +308,6 @@ export default async function HomePage() {
   return (
     <ScrollAnimator>
       <JsonLd data={homeJsonLd} />
-      <WhatsAppModal />
-
       {/* Hero */}
       <div
         id="top"
@@ -361,6 +359,9 @@ export default async function HomePage() {
 
         {/* FIRST SECTION — Results board scraped from resultsatta.com */}
         <ResultBoard games={mergedGames} now={now} />
+
+        {/* Single inline WhatsApp CTA between results and contact details */}
+        <WhatsAppButton />
 
         {/* Khaiwal / Game Schedule & Contact — directly under the first section */}
         <KhaiwalCard games={schedule} />

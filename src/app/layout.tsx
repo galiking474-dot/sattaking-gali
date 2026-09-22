@@ -3,7 +3,6 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
-import { WhatsAppButton } from "@/components/layout/WhatsAppButton";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { SITE_NAME, SITE_URL } from "@/lib/site";
 import { Toaster } from "react-hot-toast";
@@ -110,7 +109,6 @@ export default function RootLayout({
         <Header />
         {children}
         <Footer />
-        <WhatsAppButton />
         <Toaster position="top-center" />
       </body>
     </html>

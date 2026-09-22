@@ -3,5 +3,5 @@ Allow: /
 Disallow: /api/
 Disallow: /admin/
 
-Sitemap: https://sattaking-gali.com/sitemap.xml
-Host: sattaking-gali.com
+Sitemap: https://www.sattaking-gali.com/sitemap.xml
+Host: www.sattaking-gali.com
