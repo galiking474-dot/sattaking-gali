@@ -1,5 +1,6 @@
 import mongoose, { type Connection } from "mongoose";
 import dns from "node:dns";
+import { unstable_cache } from "next/cache";
 
 const LUCKY_SATTA_GAME_NAMES: Record<string, string> = {
   disawer: "DESAWAR",
@@ -26,6 +27,11 @@ export interface LuckySattaDailyResult {
   gameName: string;
   today: string;
   yesterday: string;
+}
+
+export interface LuckySattaArchiveRecord {
+  date: string;
+  result: string;
 }
 
 type LuckySattaConnectionCache = {
@@ -195,5 +201,83 @@ export async function getLuckySattaDailyResults(
       error instanceof Error ? error.message : error,
     );
     return null;
+  }
+}
+
+const ARCHIVE_GAME_ALIASES: Record<string, string> = {
+  desawar: "disawer",
+  ghaziabad: "gaziyabad",
+};
+
+const getCachedLuckySattaYearlyResults = unstable_cache(
+  async (
+    gameCode: string,
+    year: number,
+  ): Promise<LuckySattaArchiveRecord[][]> => {
+    const connection = await getConnection();
+    const database = connection.db;
+    if (!database) {
+      throw new Error("Lucky Satta MongoDB connection has no database");
+    }
+
+    const mongoGameCode = ARCHIVE_GAME_ALIASES[gameCode] ?? gameCode;
+    const documents = await database
+      .collection<LuckySattaResultDocument>("results")
+      .find(
+        {
+          game: mongoGameCode,
+          date: {
+            $gte: `${year}-01-01`,
+            $lte: `${year}-12-31`,
+          },
+        },
+        { projection: { date: 1, resultNumber: 1, updatedAt: 1 } },
+      )
+      .sort({ date: 1, updatedAt: 1 })
+      .toArray();
+
+    const months: LuckySattaArchiveRecord[][] = Array.from(
+      { length: 12 },
+      () => [],
+    );
+    const recordsByDate = new Map<string, LuckySattaArchiveRecord>();
+
+    for (const document of documents) {
+      const date = String(document.date ?? "");
+      const result = cleanResult(document.resultNumber);
+      if (/^\d{4}-\d{2}-\d{2}$/.test(date) && result) {
+        recordsByDate.set(date, { date, result });
+      }
+    }
+
+    for (const record of recordsByDate.values()) {
+      const monthIndex = Number(record.date.slice(5, 7)) - 1;
+      if (monthIndex >= 0 && monthIndex < 12) {
+        months[monthIndex].push(record);
+      }
+    }
+
+    return months;
+  },
+  ["lucky-satta-yearly-results"],
+  { revalidate: 86_400, tags: ["lucky-satta-yearly-results"] },
+);
+
+export async function getLuckySattaYearlyResults(
+  gameCode: string,
+  year: number,
+): Promise<LuckySattaArchiveRecord[][]> {
+  if (!Number.isInteger(year) || year < 2000 || year > 2100) {
+    return Array.from({ length: 12 }, () => []);
+  }
+
+  try {
+    return await getCachedLuckySattaYearlyResults(gameCode, year);
+  } catch (error) {
+    console.error(
+      "[lucky-satta-results] Failed to read yearly results from MongoDB:",
+      error instanceof Error ? error.message : error,
+    );
+    return Array.from({ length: 12 }, () => []);
   }
 }

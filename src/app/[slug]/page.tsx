@@ -9,9 +9,13 @@ import { YearlyArchive } from "@/components/charts/YearlyArchive";
 import { parseArchiveSlug } from "@/lib/archive-games";
 import { getISTDateParts, isResultDisplayable } from "@/lib/utils";
 import { getYearlyChartHistoryFromFirestore } from "@/lib/firebase-cache";
-import { getLuckySattaDailyResults } from "@/lib/lucky-satta-results";
+import {
+  getLuckySattaDailyResults,
+  getLuckySattaYearlyResults,
+} from "@/lib/lucky-satta-results";
 import { JsonLd } from "@/components/seo/JsonLd";
 import { SITE_URL } from "@/lib/site";
+import { getYearlyPageContent } from "@/lib/chart-page-content";
 
 // Revalidate at the edge every 30s, same cadence as the homepage.
 export const revalidate = 30;
@@ -60,8 +64,13 @@ export async function generateMetadata({
   const { slug } = await params;
   const archive = parseArchiveSlug(slug);
   if (archive) {
-    const title = `${archive.game.name} Satta Result Chart ${archive.year} | Old Record`;
-    const description = `View the complete ${archive.game.name} Satta result chart ${archive.year} with month-by-month records. Browse historical ${archive.game.name} results from 2015 to 2026.`;
+    const pageContent = getYearlyPageContent(archive.game.slug, archive.year);
+    const title =
+      pageContent?.title ??
+      `${archive.game.name} Satta Result Chart ${archive.year} | Old Record`;
+    const description =
+      pageContent?.introduction ??
+      `View the complete ${archive.game.name} Satta result chart ${archive.year} with month-by-month records. Browse historical ${archive.game.name} results from 2015 to 2026.`;
     return {
       title: { absolute: title },
       description,
@@ -95,10 +104,17 @@ export default async function GameResultPage({
   const archive = parseArchiveSlug(slug);
   if (archive) {
     const current = getISTDateParts();
-    const firebaseRecords = await getYearlyChartHistoryFromFirestore(
+    const mongoRecords = await getLuckySattaYearlyResults(
       archive.game.slug,
       archive.year
     );
+    const hasMongoRecords = mongoRecords.some((records) => records.length > 0);
+    const archiveRecords = hasMongoRecords
+      ? mongoRecords
+      : await getYearlyChartHistoryFromFirestore(
+          archive.game.slug,
+          archive.year
+        );
     const charts = await Promise.all(
       MONTHS_FULL.map((month, monthIndex) => {
         if (
@@ -107,7 +123,7 @@ export default async function GameResultPage({
         ) {
           return Promise.resolve(null);
         }
-        if (firebaseRecords[monthIndex]?.length) {
+        if (archiveRecords[monthIndex]?.length) {
           return Promise.resolve(null);
         }
         return getMonthlyChart(month.toLowerCase(), String(archive.year));
@@ -118,7 +134,7 @@ export default async function GameResultPage({
         game={archive.game}
         year={archive.year}
         charts={charts}
-        firebaseRecords={firebaseRecords}
+        archiveRecords={archiveRecords}
       />
     );
   }

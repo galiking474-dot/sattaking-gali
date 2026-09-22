@@ -7,8 +7,9 @@ import {
 } from "@/lib/archive-games";
 import { getAllPosts } from "@/lib/blog-data";
 import { absoluteUrl } from "@/lib/site";
+import { CHART_CONTENT_SLUGS } from "@/lib/chart-page-content";
 
-const CONTENT_UPDATED = new Date("2026-09-19T00:00:00+05:30");
+const CONTENT_UPDATED = new Date("2026-09-22T00:00:00+05:30");
 const LEGAL_UPDATED = new Date("2026-05-01T00:00:00+05:30");
 
 export default function sitemap(): MetadataRoute.Sitemap {
@@ -29,6 +30,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: absoluteUrl("/disclaimer"), lastModified: LEGAL_UPDATED, changeFrequency: "yearly", priority: 0.3 },
     { url: absoluteUrl("/privacy"), lastModified: LEGAL_UPDATED, changeFrequency: "yearly", priority: 0.3 },
   ];
+  const chartSlugs = [
+    ...new Set([
+      ...ARCHIVE_GAMES.map((game) => game.slug),
+      ...CHART_CONTENT_SLUGS,
+    ]),
+  ];
 
   return [
     ...staticRoutes,
@@ -38,8 +45,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "daily" as const,
       priority: 0.9,
     })),
-    ...ARCHIVE_GAMES.map((game) => ({
-      url: absoluteUrl(`/chart/${game.slug}`),
+    ...chartSlugs.map((slug) => ({
+      url: absoluteUrl(`/chart/${slug}`),
       lastModified: dailyUpdated,
       changeFrequency: "daily" as const,
       priority: 0.75,

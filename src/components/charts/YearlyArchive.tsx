@@ -2,8 +2,9 @@ import Link from "next/link";
 import type { ArchiveGame } from "@/lib/archive-games";
 import { ARCHIVE_YEARS, getArchivePath } from "@/lib/archive-games";
 import type { MonthlyChartData } from "@/lib/types";
-import type { FirebaseArchiveRecord } from "@/lib/firebase-cache";
 import { SITE_URL } from "@/lib/site";
+import { ChartPageInformation } from "@/components/charts/ChartPageInformation";
+import { getYearlyPageContent } from "@/lib/chart-page-content";
 
 const MONTHS = [
   "JAN",
@@ -37,13 +38,14 @@ export function YearlyArchive({
   game,
   year,
   charts,
-  firebaseRecords,
+  archiveRecords,
 }: {
   game: ArchiveGame;
   year: number;
   charts: Array<MonthlyChartData | null>;
-  firebaseRecords: FirebaseArchiveRecord[][];
+  archiveRecords: Array<Array<{ date: string; result: string }>>;
 }) {
+  const pageContent = getYearlyPageContent(game.slug, year);
   const values = charts.map((chart, monthIndex) => {
     const monthValues = new Map<number, string>();
     for (const row of chart?.results ?? []) {
@@ -52,7 +54,7 @@ export function YearlyArchive({
         monthValues.set(day, cleanResult(row[game.chartKey]));
       }
     }
-    for (const record of firebaseRecords[monthIndex] ?? []) {
+    for (const record of archiveRecords[monthIndex] ?? []) {
       const day = parseDay(record.date);
       if (day >= 1 && day <= 31) {
         monthValues.set(day, cleanResult(record.result));
@@ -114,7 +116,7 @@ export function YearlyArchive({
           Complete yearly result archive
         </p>
         <h1 className="mt-2 text-2xl font-extrabold text-[#3a1d00] md:text-4xl">
-          {game.name} Satta Result Chart {year}
+          {pageContent?.title ?? `${game.name} Satta Result Chart ${year}`}
         </h1>
         <p className="mx-auto mt-3 max-w-3xl text-sm font-medium leading-6 text-[#70501a] md:text-base">
           Month-by-month {game.name} result records for {year}. Only available
@@ -205,6 +207,8 @@ export function YearlyArchive({
           ))}
         </div>
       </section>
+
+      {pageContent && <ChartPageInformation content={pageContent} />}
     </div>
   );
 }

@@ -4,6 +4,8 @@ import { useEffect, useState, use } from "react";
 import Link from "next/link";
 import { FiChevronLeft, FiChevronRight, FiBarChart2 } from "react-icons/fi";
 import type { ChartRow } from "@/lib/types";
+import { ChartPageInformation } from "@/components/charts/ChartPageInformation";
+import { getChartPageContent } from "@/lib/chart-page-content";
 
 interface GameChartRow {
   date: string;
@@ -23,6 +25,7 @@ export default function GameChartPage({
 }) {
   const { gameCode } = use(params);
   const gameName = gameCode.replace(/-/g, " ").toUpperCase();
+  const pageContent = getChartPageContent(gameCode);
 
   const [rows, setRows] = useState<GameChartRow[]>([]);
   const [monthlyRows, setMonthlyRows] = useState<ChartRow[]>([]);
@@ -85,7 +88,7 @@ export default function GameChartPage({
           <FiBarChart2 size={14} /> Record Chart
         </div>
         <h1 className="text-2xl md:text-3xl font-extrabold text-[#a5370c]">
-          {gameName} Chart Record
+          {pageContent?.title ?? `${gameName} Chart Record`}
         </h1>
         <p className="text-[#8a6d2f] text-sm mt-1">
           Monthly result history for {gameName}
@@ -156,6 +159,12 @@ export default function GameChartPage({
       ) : (
         /* ── Fallback: combined monthly chart ── */
         <MonthlyFallback rows={monthlyRows} month={displayMonth} year={displayYear} />
+      )}
+
+      {pageContent && (
+        <div className="mt-6">
+          <ChartPageInformation content={pageContent} />
+        </div>
       )}
 
       {/* Back link */}

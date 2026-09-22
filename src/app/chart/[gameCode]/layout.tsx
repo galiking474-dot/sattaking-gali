@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { SITE_URL } from "@/lib/site";
+import { getChartPageContent } from "@/lib/chart-page-content";
 
 // Custom meta descriptions per game chart slug.
 const CHART_DESCRIPTIONS: Record<string, string> = {
@@ -62,9 +63,13 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { gameCode } = await params;
   const gameName = toTitleCase(gameCode);
+  const pageContent = getChartPageContent(gameCode);
 
-  const title = `${gameName} Satta King Chart | Today Result & Old Record`;
+  const title =
+    pageContent?.title ??
+    `${gameName} Satta King Chart | Today Result & Old Record`;
   const description =
+    pageContent?.introduction ??
     CHART_DESCRIPTIONS[gameCode] ??
     `Check the latest ${gameName} Satta King chart with today's result, old records, previous winning numbers, and complete historical data.`;
   const url = `${SITE_URL}/chart/${gameCode}`;
