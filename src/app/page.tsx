@@ -183,12 +183,12 @@ export default async function HomePage() {
   // Fetch everything on the server, directly from the data layer (no self-HTTP).
   const [resultSatta, homepage, chart, adminOverrides, luckySattaResults] =
     await Promise.all([
-    getResultSattaData(),
-    getSharedHomepageData(),
-    getSatta29Chart(month, year),
-    getDailyResultOverridesFromFirestore(today),
-    getLuckySattaDailyResults(now),
-  ]);
+      getResultSattaData(),
+      getSharedHomepageData(),
+      getSatta29Chart(month, year),
+      getDailyResultOverridesFromFirestore(today),
+      getLuckySattaDailyResults(now),
+    ]);
 
   const games = (resultSatta?.games ?? []).filter(isVisibleGame);
   const chartData = chart
@@ -262,8 +262,8 @@ export default async function HomePage() {
   const upNext =
     timed.sort((a, b) => minutesUntil(a.min) - minutesUntil(b.min))[0]?.g ??
     null;
-  const declaredCount = mergedGames.filter(
-    (game) => isResultDisplayable(game.time, game.today, now),
+  const declaredCount = mergedGames.filter((game) =>
+    isResultDisplayable(game.time, game.today, now),
   ).length;
 
   const updatedAt =
@@ -305,6 +305,7 @@ export default async function HomePage() {
     ],
   };
 
+  const todayDate = new Date();
   return (
     <ScrollAnimator>
       <JsonLd data={homeJsonLd} />
@@ -317,6 +318,14 @@ export default async function HomePage() {
           Satta King Result Today {year} &ndash; Fast &amp; Latest Satta Result
           Updates
         </h1>
+        <p className="text-[13px] sm:text-sm md:text-base font-medium max-w-4xl mx-auto leading-relaxed mb-2">
+          Today Superfast Satta King Result of {todayDate.getDate()}{" "}
+          {todayDate.toLocaleString("en-IN", { month: "long" })} {year} And Leak
+          Numbers for Gali, Desawar, Ghaziabad and Faridabad With Complete Old
+          Satta King Chart of 2015, 2016, 2017, 2018, 2019, 2020, 2021, 2023,
+          2024, 2025, 2026 From Satta King Fast, Satta King Gali, Satta King
+          Desawar, Satta King Ghaziabad, Satta King Faridabad, lucky Satta,.
+        </p>
 
         {/* Scoreboard spotlight — distinct hero band */}
         <Scoreboard
@@ -354,7 +363,7 @@ export default async function HomePage() {
         <FeaturedGameLinks />
       </div>
 
-      <div className="max-w-[1400px] mx-auto px-2 sm:px-3 md:px-6 py-4 md:py-6 space-y-6 md:space-y-8">
+      <div className="max-w-350 mx-auto px-2 sm:px-3 md:px-6 py-4 md:py-6 space-y-6 md:space-y-8">
         <AdSlot placement="homepage_top" />
 
         {/* FIRST SECTION — Results board scraped from resultsatta.com */}
@@ -467,10 +476,10 @@ function Scoreboard({
 }) {
   return (
     <div className="bg-[#FDF3C9]">
-      <div className="max-w-[1400px] mx-auto px-2 sm:px-3 md:px-6 py-4 md:py-6">
+      <div className="max-w-350 mx-auto px-2 sm:px-3 md:px-6 py-4 md:py-6">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
           {/* Next upcoming — dark, with pulsing WAIT badge */}
-          <div className="relative rounded-2xl bg-gradient-to-br from-[#241a06] to-[#6b4c12] p-5 md:p-6 border-2 border-[#e0a92b] overflow-hidden shadow-xl shadow-black/20">
+          <div className="relative rounded-2xl bg-linear-to-br from-[#241a06] to-[#6b4c12] p-5 md:p-6 border-2 border-[#e0a92b] overflow-hidden shadow-xl shadow-black/20">
             <div className="absolute -right-10 -top-10 w-36 h-36 rounded-full bg-[#f5b301]/15 blur-2xl" />
 
             <div className="relative flex items-center gap-2 text-[#FFD93B] text-[11px] md:text-xs font-extrabold uppercase tracking-[0.2em]">
@@ -505,7 +514,7 @@ function Scoreboard({
             )}
           </div>
           {/* Latest declared — dramatic dark reveal */}
-          <div className="relative rounded-2xl bg-gradient-to-br from-[#2a1400] via-[#5a2408] to-[#a5370c] p-5 md:p-6 border-2 border-[#FFD93B] overflow-hidden shadow-xl shadow-[#a5370c]/30">
+          <div className="relative rounded-2xl bg-linear-to-br from-[#2a1400] via-[#5a2408] to-[#a5370c] p-5 md:p-6 border-2 border-[#FFD93B] overflow-hidden shadow-xl shadow-[#a5370c]/30">
             {/* glow blobs */}
             <div className="absolute -right-10 -top-10 w-40 h-40 rounded-full bg-[#FFD93B]/20 blur-2xl" />
             <div className="absolute -left-8 -bottom-8 w-28 h-28 rounded-full bg-[#dc2626]/20 blur-2xl" />
@@ -598,7 +607,7 @@ function GameTable({ children }: { children: React.ReactNode }) {
     <div className="overflow-x-auto">
       <table className="w-full border-collapse">
         <thead>
-          <tr className="bg-gradient-to-r from-[#FFD93B] to-[#F5A623] text-[#a5370c] text-[11px] md:text-sm uppercase tracking-wide">
+          <tr className="bg-linear-to-r from-[#FFD93B] to-[#F5A623] text-[#a5370c] text-[11px] md:text-sm uppercase tracking-wide">
             <th className="text-left py-2.5 px-3 md:px-4 font-extrabold border-b-2 border-[#e0850b]">
               Game
             </th>
@@ -642,7 +651,7 @@ function GameRow({
       {/* Game name + time chip + record chart link */}
       <td className="py-2.5 px-3 md:px-4 border-l-[5px] border-[#F5A623]">
         <div className="flex items-center gap-2">
-          <span className="font-extrabold text-[#1e293b] uppercase text-[15px] md:text-lg leading-tight break-words">
+          <span className="font-extrabold text-[#1e293b] uppercase text-[15px] md:text-lg leading-tight wrap-break-word">
             {game.name}
           </span>
           {live && (
@@ -747,11 +756,7 @@ function ResultBoard({ games, now }: { games: GameResult[]; now: Date }) {
           <div className="grid grid-cols-2 gap-2.5 md:gap-4 p-3 md:p-4 bg-[#FFFDF3]">
             {displayGames.map((game, i) => {
               // The merged value has already passed source-aware rollover checks.
-              const showToday = isResultDisplayable(
-                game.time,
-                game.today,
-                now,
-              );
+              const showToday = isResultDisplayable(game.time, game.today, now);
               return (
                 <GameCard
                   key={game.name + i}
@@ -784,8 +789,8 @@ function GameCard({
   return (
     <div className="rounded-xl border-2 border-[#f0d98a] bg-white shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col">
       {/* Game name + time */}
-      <div className="bg-gradient-to-r from-[#FFF7DA] to-[#FCE38A] px-3 py-1.5 border-b border-[#f0d98a]">
-        <span className="block font-extrabold text-[#1e293b] uppercase text-lg md:text-xl leading-tight break-words">
+      <div className="bg-linear-to-r from-[#FFF7DA] to-[#FCE38A] px-3 py-1.5 border-b border-[#f0d98a]">
+        <span className="block font-extrabold text-[#1e293b] uppercase text-lg md:text-xl leading-tight wrap-break-word">
           {game.name}
         </span>
         <span className="inline-flex items-center gap-1 text-[10px] md:text-xs font-bold text-[#8a6d2f]">
@@ -863,7 +868,7 @@ function CombinedResults({ groups }: { groups: ResultGroup[] }) {
               {/* Group heading row (spans all columns) */}
               <tr>
                 <td colSpan={3} className="p-0">
-                  <div className="flex items-center gap-2.5 md:gap-3 bg-gradient-to-r from-[#FFF7DA] to-[#FCE38A] px-3 md:px-4 py-2.5 md:py-3 border-y-2 border-[#e0850b]">
+                  <div className="flex items-center gap-2.5 md:gap-3 bg-linear-to-r from-[#FFF7DA] to-[#FCE38A] px-3 md:px-4 py-2.5 md:py-3 border-y-2 border-[#e0850b]">
                     <span
                       className="inline-flex items-center justify-center w-9 h-9 md:w-10 md:h-10 rounded-lg text-white shrink-0 shadow-sm"
                       style={{ backgroundColor: group.barColor }}
@@ -928,7 +933,7 @@ function KeywordButtons({ monthYear }: { monthYear: string }) {
       {/* Top full-width bar */}
       <Link
         href="/charts"
-        className="block w-full text-center bg-gradient-to-r from-[#FFD93B] to-[#F5A623] text-[#a5370c] font-bold text-sm md:text-lg py-3 md:py-4 rounded-xl shadow-md border-2 border-[#e0850b] hover:brightness-105 transition-all"
+        className="block w-full text-center bg-linear-to-r from-[#FFD93B] to-[#F5A623] text-[#a5370c] font-bold text-sm md:text-lg py-3 md:py-4 rounded-xl shadow-md border-2 border-[#e0850b] hover:brightness-105 transition-all"
       >
         Click here to view the latest chart for all games for {monthYear}
       </Link>
@@ -939,7 +944,7 @@ function KeywordButtons({ monthYear }: { monthYear: string }) {
           <Link
             key={resource.href}
             href={resource.href}
-            className="text-center bg-gradient-to-b from-[#FFD93B] to-[#d4a017] text-[#3a1d00] font-extrabold text-xs sm:text-sm md:text-lg py-3.5 md:py-4 rounded-xl border-2 border-[#e0850b] shadow-sm hover:brightness-105 transition-all"
+            className="text-center bg-linear-to-b from-[#FFD93B] to-[#d4a017] text-[#3a1d00] font-extrabold text-xs sm:text-sm md:text-lg py-3.5 md:py-4 rounded-xl border-2 border-[#e0850b] shadow-sm hover:brightness-105 transition-all"
           >
             {resource.label}
           </Link>
